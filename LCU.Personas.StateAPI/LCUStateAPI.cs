@@ -19,8 +19,10 @@ namespace LCU.Personas.StateAPI
         #endregion
 
         #region Constructors
-        public LCUStateAPI()
-        { }
+        public LCUStateAPI(ILogger logger)
+        {
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
         #endregion
 
         #region Helpers
@@ -44,23 +46,16 @@ namespace LCU.Personas.StateAPI
             return username;
         }
 
-        protected virtual void setLogger(FunctionContext context)
+        protected virtual IAPIBoundary<HttpResponseData> withAPIBoundary()
         {
-            logger = context.GetLogger(GetType().Name);
-        }
-
-        protected virtual IAPIBoundary<HttpResponseData> withAPIBoundary(FunctionContext context)
-        {
-            setLogger(context);
-
             return new APIBoundary<HttpResponseData>(logger);
         }
 
-        protected virtual IAPIBoundaried<HttpResponseData> withAPIBoundary<T>(HttpRequestData req, FunctionContext context, 
+        protected virtual IAPIBoundaried<HttpResponseData> withAPIBoundary<T>(HttpRequestData req,
             Func<T, Task<T>> action)
                 where T : new()
         {
-            return withAPIBoundaried(context, api =>
+            return withAPIBoundaried(api =>
             {
                 return api
                     .SetDefaultResponse(req.CreateResponse())
@@ -87,12 +82,12 @@ namespace LCU.Personas.StateAPI
             });
         }
 
-        protected virtual IAPIBoundaried<HttpResponseData> withAPIBoundary<TRequest, TResponse>(HttpRequestData req, FunctionContext context,
+        protected virtual IAPIBoundaried<HttpResponseData> withAPIBoundary<TRequest, TResponse>(HttpRequestData req,
             Func<TRequest, TResponse, Task<TResponse>> action)
                 where TRequest : class, new()
                 where TResponse : BaseResponse, new()
         {
-            return withAPIBoundary<TResponse>(req, context, async response =>
+            return withAPIBoundary<TResponse>(req, async response =>
             {
                 using var streamRdr = new StreamReader(req.Body);
 
@@ -108,18 +103,11 @@ namespace LCU.Personas.StateAPI
             });
         }
 
-        protected virtual IAPIBoundaried<HttpResponseData> withAPIBoundaried(FunctionContext context, 
+        protected virtual IAPIBoundaried<HttpResponseData> withAPIBoundaried(
             Func<IAPIBoundary<HttpResponseData>, IAPIBoundaried<HttpResponseData>> api)
         {
-            return api(withAPIBoundary(context));
+            return api(withAPIBoundary());
         }
-
-        //protected virtual IAPIBoundary<BaseResponse<T>> withModeledAPIBoundary<T>(FunctionContext context)
-        //{
-        //    setLogger(context);
-
-        //    return new APIResponseBoundary<BaseResponse<T>>();
-        //}
         #endregion
     }
 

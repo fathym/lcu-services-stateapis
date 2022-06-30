@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 
-[assembly: WebJobsStartup(typeof(LCU.Personas.StateAPI.SignalRClient.StateServiceBinding.Startup))]
-namespace LCU.Personas.StateAPI.SignalRClient
+[assembly: WebJobsStartup(typeof(LCU.Personas.StateAPI.StateServices.StateServiceBinding.Startup))]
+namespace LCU.Personas.StateAPI.StateServices
 {
     public class StateServiceBinding
     {

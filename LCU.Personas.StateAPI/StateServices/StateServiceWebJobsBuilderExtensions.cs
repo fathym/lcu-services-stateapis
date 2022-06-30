@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace LCU.Personas.StateAPI.SignalRClient
+namespace LCU.Personas.StateAPI.StateServices
 {
     public static class StateServiceWebJobsBuilderExtensions
     {

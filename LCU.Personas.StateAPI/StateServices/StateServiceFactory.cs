@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LCU.Personas.StateAPI.SignalRClient
+namespace LCU.Personas.StateAPI.StateServices
 {
     public class StateServiceFactory : IStateServiceFactory
     {

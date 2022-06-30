@@ -6,7 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace LCU.Personas.StateAPI.SignalRClient
+namespace LCU.Personas.StateAPI.StateServices
 {
     public class StateServiceExtensionConfigProvider : IExtensionConfigProvider
     {

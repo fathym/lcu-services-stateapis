@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LCU.Personas.StateAPI.SignalRClient
+namespace LCU.Personas.StateAPI.StateServices
 {
     public class StateServiceTriggerBinding : ITriggerBinding
     {

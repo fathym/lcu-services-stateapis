@@ -3,7 +3,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace LCU.Personas.StateAPI.SignalRClient
+namespace LCU.Personas.StateAPI.StateServices
 {
     public class StateServiceTriggerBindingProvider : ITriggerBindingProvider
     {

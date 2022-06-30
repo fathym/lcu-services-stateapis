@@ -2,7 +2,7 @@
 using Microsoft.Azure.WebJobs.Description;
 using System;
 
-namespace LCU.Personas.StateAPI.SignalRClient
+namespace LCU.Personas.StateAPI.StateServices
 {
     [Binding]
     [AttributeUsage(AttributeTargets.Parameter)]

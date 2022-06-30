@@ -2,6 +2,7 @@
 using Fathym.API.Fluent;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -107,5 +108,4 @@ namespace LCU.Personas.StateAPI
         }
         #endregion
     }
-
 }

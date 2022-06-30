@@ -11,16 +11,16 @@ namespace LCU.Personas.StateAPI
         protected virtual async Task handleStateEmpty(IDurableEntityClient client, EntityId entityId)
         { }
 
-        protected async Task<TStateEntity> loadAndUpdateEaCState(IDurableEntityClient client, string stateKey)
+        protected async Task<TStateEntity> loadAndUpdateState(IDurableEntityClient client, string stateKey)
         {
-            var state = await loadEaCState(client, stateKey);
+            var state = await loadState(client, stateKey);
 
             await Clients.Groups(stateKey).SendAsync("state-update", state);
 
             return state;
         }
 
-        protected virtual async Task<TStateEntity> loadEaCState(IDurableEntityClient client, string stateKey)
+        protected virtual async Task<TStateEntity> loadState(IDurableEntityClient client, string stateKey)
         {
             var entityId = new EntityId(nameof(TStateEntity), stateKey);
 

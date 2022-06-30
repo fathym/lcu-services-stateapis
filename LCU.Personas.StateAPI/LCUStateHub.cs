@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace LCU.Personas.StateAPI
 {
-    public class StateHub<TStateEntity> : ServerlessHub
+    public class LCUStateHub<TStateEntity> : ServerlessHub
     {
         #region Helpers
         protected virtual async Task handleStateEmpty(IDurableEntityClient client, EntityId entityId)

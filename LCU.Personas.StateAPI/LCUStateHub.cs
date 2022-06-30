@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Azure.SignalR.Management;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace LCU.Personas.StateAPI
@@ -46,6 +50,21 @@ namespace LCU.Personas.StateAPI
             }
 
             return state.EntityState;
+        }
+
+        protected virtual async Task<SignalRConnectionInfo> negotiate(HttpRequestMessage req)
+        {
+            var authorization = req.Headers.GetValues("Authorization").FirstOrDefault();
+
+            var claims = GetClaims(authorization);
+
+            claims.Add(new Claim("lcu-ent-lookup", req.Headers.GetValues("lcu-ent-lookup").FirstOrDefault()));
+
+            return await NegotiateAsync(new NegotiationOptions
+            {
+                UserId = claims?.FirstOrDefault(c => c.Type == "emails")?.Value,
+                Claims = claims
+            });
         }
         #endregion
     }

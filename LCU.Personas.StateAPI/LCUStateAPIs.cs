@@ -15,7 +15,7 @@ namespace LCU.Personas.StateAPI
         #endregion
 
         #region Helpers
-        protected virtual async Task signalStateShare(IDurableEntityClient client, IAsyncCollector<SignalRMessage> signalRMessages,
+        protected virtual async Task signalStateUpdate(IDurableEntityClient client, IAsyncCollector<SignalRMessage> signalRMessages,
             string stateKey)
         {
             var entityId = new EntityId(typeof(TStateEntity).Name, stateKey);

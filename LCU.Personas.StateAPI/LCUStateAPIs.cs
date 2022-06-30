@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+﻿using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
@@ -19,14 +20,14 @@ namespace LCU.Personas.StateAPI
         {
             var entityId = new EntityId(typeof(TStateEntity).Name, stateKey);
 
-            var state = await client.ReadEntityStateAsync<EaCStateEntity>(entityId);
+            var state = await client.ReadEntityStateAsync<TStateEntity>(entityId);
 
             await signalRMessages.AddAsync(
                 new SignalRMessage
                 {
                     GroupName = stateKey,
                     Target = "state-update",
-                    Arguments = new[] { state.EntityState }
+                    Arguments = new object[] { state.EntityState }
                 });
         }
         #endregion

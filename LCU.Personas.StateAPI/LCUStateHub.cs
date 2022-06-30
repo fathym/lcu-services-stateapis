@@ -22,7 +22,7 @@ namespace LCU.Personas.StateAPI
 
         protected virtual async Task<TStateEntity> loadState(IDurableEntityClient client, string stateKey)
         {
-            var entityId = new EntityId(nameof(TStateEntity), stateKey);
+            var entityId = new EntityId(typeof(TStateEntity).Name, stateKey);
 
             var state = await client.ReadEntityStateAsync<TStateEntity>(entityId);
 

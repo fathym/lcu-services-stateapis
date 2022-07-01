@@ -16,7 +16,7 @@ namespace LCU.Personas.StateAPI
 
         #region Helpers
         protected virtual async Task signalStateUpdate(IDurableEntityClient client, IAsyncCollector<SignalRMessage> signalRMessages,
-            string stateKey)
+            string stateKey, string target = "state-update")
         {
             var entityId = new EntityId(typeof(TStateEntity).Name, stateKey);
 
@@ -26,7 +26,7 @@ namespace LCU.Personas.StateAPI
                 new SignalRMessage
                 {
                     GroupName = stateKey,
-                    Target = "state-update",
+                    Target = target,
                     Arguments = new object[] { state.EntityState }
                 });
         }

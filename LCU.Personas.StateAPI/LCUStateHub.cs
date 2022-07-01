@@ -13,19 +13,19 @@ namespace LCU.Personas.StateAPI
     public class LCUStateHub<TStateEntity> : ServerlessHub
     {
         #region Helpers
-        protected async Task addStateListener(InvocationContext invocationContext, IDurableEntityClient client, string stateKey)
+        protected virtual async Task addStateListener(InvocationContext invocationContext, IDurableEntityClient client, string stateKey)
         {
             await Groups.AddToGroupAsync(invocationContext.ConnectionId, stateKey);
 
             await loadAndUpdateState(client, stateKey);
         }
 
-        protected async Task removeStateListener(InvocationContext invocationContext, string stateKey)
+        protected virtual async Task removeStateListener(InvocationContext invocationContext, string stateKey)
         {
             await Groups.RemoveFromGroupAsync(invocationContext.ConnectionId, stateKey);
         }
 
-        protected async Task connected(InvocationContext invocationContext, IDurableEntityClient client, ILogger logger)
+        protected virtual async Task connected(InvocationContext invocationContext, IDurableEntityClient client, ILogger logger)
         {
             logger.LogInformation($"{invocationContext.ConnectionId} has connected");
 

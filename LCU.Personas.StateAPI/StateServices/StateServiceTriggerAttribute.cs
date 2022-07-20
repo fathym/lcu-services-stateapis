@@ -8,6 +8,8 @@ namespace LCU.Personas.StateAPI.StateServices
     [AttributeUsage(AttributeTargets.Parameter)]
     public class StateServiceTriggerAttribute : StateServiceAttribute//Attribute
     {
+        public virtual string ClientType { get; set; }
+
         //[AutoResolve]
         //public virtual string StateKey { get; set; }
 

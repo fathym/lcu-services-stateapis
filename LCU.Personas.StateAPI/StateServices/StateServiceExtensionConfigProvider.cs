@@ -45,23 +45,24 @@ namespace LCU.Personas.StateAPI.StateServices
 
         public StateServiceTriggerContext CreateContext(StateServiceTriggerAttribute attribute)
         {
-            return new StateServiceTriggerContext(attribute, loadStateService(attribute));
+            //var clientType = !attribute.ClientType.IsNullOrEmpty() ? Type.GetType(attribute.ClientType) : null;
+
+            return new StateServiceTriggerContext(attribute, loadStateService(attribute, null));//, clientType));
         }
         #endregion
 
         #region Helpers
-        protected virtual IStateService loadStateService(StateServiceTriggerAttribute attribute, Type type = null)
+        protected virtual IStateService loadStateService(StateServiceTriggerAttribute attribute, Type type)
         {
             return loadStateService(attribute.GetURL(), attribute.Transport, type);
         }
 
-        protected virtual IStateService loadStateService(StateServiceAttribute attribute, Type type = null)
+        protected virtual IStateService loadStateService(StateServiceAttribute attribute, Type type)
         {
             return loadStateService(attribute.GetURL(), attribute.Transport, type);
         }
 
-        protected virtual IStateService loadStateService(string url, HttpTransportType transport, 
-            Type type = null)
+        protected virtual IStateService loadStateService(string url, HttpTransportType transport, Type type)
         {
             var cacheKey = $"{url}";
 

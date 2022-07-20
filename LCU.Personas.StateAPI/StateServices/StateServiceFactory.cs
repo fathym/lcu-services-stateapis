@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,14 +19,18 @@ namespace LCU.Personas.StateAPI.StateServices
         }
         #endregion
 
-        public IStateService CreateStateService(string entLookup, string url, HttpTransportType transport)
+        public IStateService CreateStateService(string url, HttpTransportType transport,
+            Type type = null)
         {
             var client = stateSvcs.FirstOrDefault(ss => ss.URL == url);
 
+            if (client == null && type != null)
+                client = (IStateService)Activator.CreateInstance(type, url, transport);
+            
             if (client == null)
                 client = new StateService(url, transport);
 
-            client.Start(entLookup).Wait();
+            client.Start().Wait();
 
             return client;
         }

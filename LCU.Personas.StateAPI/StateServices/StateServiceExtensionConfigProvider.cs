@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Fathym;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.Extensions.Configuration;
@@ -28,19 +29,18 @@ namespace LCU.Personas.StateAPI.StateServices
         #region API Methods
         public void Initialize(ExtensionConfigContext context)
         {
-            var triggerRule = context.AddBindingRule<StateServiceTriggerAttribute>();
-
-            triggerRule.BindToTrigger(new StateServiceTriggerBindingProvider(this));
-
             var inputRule = context.AddBindingRule<StateServiceAttribute>();
 
             inputRule.BindToValueProvider(async (attribute, type) =>
             {
-                var client = loadStateService(attribute);
+                var client = loadStateService(attribute, type);
 
                 return new StateServiceValueBinder(client);
             });
-            //inputRule.BindToInput(attribute => loadStateService(attribute));
+
+            var triggerRule = context.AddBindingRule<StateServiceTriggerAttribute>();
+
+            triggerRule.BindToTrigger(new StateServiceTriggerBindingProvider(this));
         }
 
         public StateServiceTriggerContext CreateContext(StateServiceTriggerAttribute attribute)
@@ -50,18 +50,27 @@ namespace LCU.Personas.StateAPI.StateServices
         #endregion
 
         #region Helpers
-        protected virtual IStateService loadStateService(StateServiceAttribute attribute)
+        protected virtual IStateService loadStateService(StateServiceTriggerAttribute attribute, Type type = null)
         {
-            var entLookup = attribute.GetEnterpriseLookup();
+            return loadStateService(attribute.GetURL(), attribute.Transport, type);
+        }
 
-            var url = attribute.GetURL();
+        protected virtual IStateService loadStateService(StateServiceAttribute attribute, Type type = null)
+        {
+            return loadStateService(attribute.GetURL(), attribute.Transport, type);
+        }
 
-            if (!clientCache.ContainsKey(url))
+        protected virtual IStateService loadStateService(string url, HttpTransportType transport, 
+            Type type = null)
+        {
+            var cacheKey = $"{url}";
+
+            if (!clientCache.ContainsKey(cacheKey))
             {
-                clientCache[url] = serviceFactory.CreateStateService(attribute.GetEnterpriseLookup(), url, attribute.Transport);
+                clientCache[cacheKey] = serviceFactory.CreateStateService(url, transport, type);
             }
 
-            return clientCache[url];
+            return clientCache[cacheKey];
         }
         #endregion
     }

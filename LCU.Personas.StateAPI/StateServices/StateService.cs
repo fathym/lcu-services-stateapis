@@ -18,9 +18,13 @@ namespace LCU.Personas.StateAPI.StateServices
 
         string URL { get; }
 
-        Task Start(string entLookup);
+        Task Start();
 
         Task Stop();
+
+        Task AttachState(string stateKey);
+
+        Task UnattachState(string stateKey);
     }
 
     public class StateService : IStateService
@@ -53,7 +57,7 @@ namespace LCU.Personas.StateAPI.StateServices
         #endregion
 
         #region API Methods
-        public virtual async Task Start(string entLookup)
+        public virtual async Task Start()
         {
             await DesignOutline.Instance.Retry()
                 .SetActionAsync(async () =>
@@ -62,7 +66,7 @@ namespace LCU.Personas.StateAPI.StateServices
                     {
                         if (Hub == null)
                         {
-                            Hub = connect(entLookup, URL, Transport);
+                            Hub = connect(URL, Transport);
 
                             Hub.ServerTimeout = TimeSpan.FromMilliseconds(600000);
 
@@ -97,26 +101,35 @@ namespace LCU.Personas.StateAPI.StateServices
         {
             return Hub?.StopAsync() ?? Task.CompletedTask;
         }
+
+        public virtual Task AttachState(string stateKey)
+        {
+            return Hub.InvokeAsync($"AttachState", stateKey);
+        }
+
+        public virtual Task UnattachState(string stateKey)
+        {
+            return Hub.InvokeAsync($"UnattachState", stateKey);
+        }
         #endregion
 
         #region Helpers
-        protected virtual HubConnection connect(string entLookup, string url, HttpTransportType transport)
+        protected virtual HubConnection connect(string url, HttpTransportType transport)
         {
-            var bldr = createHubBuilder(entLookup, url, transport);
+            var bldr = createHubBuilder(url, transport);
 
             return bldr.Build();
         }
 
-        protected virtual IHubConnectionBuilder createHubBuilder(string entLookup, string url, HttpTransportType transport)
+        protected virtual IHubConnectionBuilder createHubBuilder(string url, HttpTransportType transport)
         {
             return new HubConnectionBuilder()
                 .WithUrl(new Uri(url), o =>
                 {
                     o.Transports = transport;
 
+                    //  TODO:  Where to get JWT
                     o.AccessTokenProvider = async () => Environment.GetEnvironmentVariable("TEMP_JWT");
-
-                    o.Headers.Add("lcu-ent-lookup", entLookup);
                 })
                 .WithAutomaticReconnect();
         }

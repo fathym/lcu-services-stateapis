@@ -9,10 +9,10 @@ namespace LCU.Personas.StateAPI.StateServices
     [AttributeUsage(AttributeTargets.Parameter)]
     public class StateServiceAttribute : Attribute
     {
-        public virtual string EnterpriseLookup { get; set; }
-
         public virtual HttpTransportType Transport { get; set; }
 
+        //[AppSetting(Default = "STATE_SERVICE_URL")]
+        [AutoResolve]
         public virtual string URL { get; set; }
 
         public StateServiceAttribute()
@@ -20,12 +20,7 @@ namespace LCU.Personas.StateAPI.StateServices
             Transport = HttpTransportType.WebSockets;
         }
 
-        internal string GetEnterpriseLookup()
-        {
-            return Environment.GetEnvironmentVariable(EnterpriseLookup) ?? EnterpriseLookup;
-        }
-
-        internal string GetURL()
+        public string GetURL()
         {
             return Environment.GetEnvironmentVariable(URL) ?? URL;
         }

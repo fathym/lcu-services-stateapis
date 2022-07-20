@@ -6,7 +6,20 @@ namespace LCU.Personas.StateAPI.StateServices
 {
     [Binding]
     [AttributeUsage(AttributeTargets.Parameter)]
-    public class StateServiceTriggerAttribute : StateServiceAttribute
+    public class StateServiceTriggerAttribute : StateServiceAttribute//Attribute
     {
+        //[AutoResolve]
+        //public virtual string StateKey { get; set; }
+
+        //public virtual HttpTransportType Transport { get; set; }
+
+        ////[AppSetting(Default = "STATE_SERVICE_URL")]
+        //[AutoResolve]
+        //public virtual string URL { get; set; }
+
+        //public StateServiceTriggerAttribute()
+        //{
+        //    Transport = HttpTransportType.WebSockets;
+        //}
     }
 }

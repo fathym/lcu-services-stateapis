@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Fathym;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.SignalR.Management;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -13,11 +15,24 @@ namespace LCU.Personas.StateAPI
     public class LCUStateHub<TStateEntity> : ServerlessHub
     {
         #region Helpers
-        protected virtual async Task addStateListener(InvocationContext invocationContext, IDurableEntityClient client, string stateKey)
+        protected virtual async Task addStateListener(InvocationContext invocationContext, IDurableEntityClient client, 
+            string stateKey)
         {
             await Groups.AddToGroupAsync(invocationContext.ConnectionId, stateKey);
 
             await loadAndUpdateState(client, stateKey);
+        }
+
+        protected virtual async Task attachState(InvocationContext invocationContext, string stateKey,
+            IDurableEntityClient client, ILogger logger)
+        {
+            logger.LogInformation($"{invocationContext.ConnectionId} has connected");
+
+            await Groups.AddToGroupAsync(invocationContext.ConnectionId, stateKey);
+
+            await loadAndUpdateState(client, stateKey);
+
+            //  TODO:  map connection to user
         }
 
         protected virtual async Task removeStateListener(InvocationContext invocationContext, string stateKey)
@@ -29,13 +44,14 @@ namespace LCU.Personas.StateAPI
         {
             logger.LogInformation($"{invocationContext.ConnectionId} has connected");
 
-            //var entLookup = invocationContext.Claims["lcu-ent-lookup"];
-
-            //await Groups.AddToGroupAsync(invocationContext.ConnectionId, entLookup);
-
-            //await loadAndUpdateState(client, entLookup);
-
             //  TODO:  map connection to user
+        }
+
+        protected virtual async Task disconnected(InvocationContext invocationContext, IDurableEntityClient client, ILogger logger)
+        {
+            logger.LogInformation($"{invocationContext.ConnectionId} has disconnected");
+
+            //  TODO:  unmap connection to user
         }
 
         protected virtual async Task handleStateEmpty(IDurableEntityClient client, EntityId entityId)
@@ -45,7 +61,11 @@ namespace LCU.Personas.StateAPI
         {
             var state = await loadState(client, stateKey);
 
-            await Clients.Groups(stateKey).SendAsync("state-update", state);
+            var stateMeta = state.JSONConvert<MetadataModel>() ?? new MetadataModel();
+
+            stateMeta.Metadata["$stateKey"] = stateKey;
+
+            await Clients.Groups(stateKey).SendAsync("state-update", stateMeta);
 
             return state;
         }
@@ -72,13 +92,20 @@ namespace LCU.Personas.StateAPI
 
             var claims = GetClaims(authorization);
 
-            claims.Add(new Claim("lcu-ent-lookup", req.Headers.GetValues("lcu-ent-lookup").FirstOrDefault()));
+            //claims.Add(new Claim("lcu-state-key", req.Headers.GetValues("lcu-state-key").FirstOrDefault()));
 
             return await NegotiateAsync(new NegotiationOptions
             {
                 UserId = claims?.FirstOrDefault(c => c.Type == "emails")?.Value,
                 Claims = claims
             });
+        }
+
+        protected virtual async Task unattachState(InvocationContext invocationContext, string stateKey, ILogger logger)
+        {
+            logger.LogInformation($"{invocationContext.ConnectionId} has connected");
+
+            await Groups.RemoveFromGroupAsync(invocationContext.ConnectionId, stateKey);
         }
         #endregion
     }

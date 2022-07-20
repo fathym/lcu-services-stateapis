@@ -18,7 +18,7 @@ namespace LCU.Personas.StateAPI.StateServices
         {
             var parameter = context.Parameter;
 
-            var attribute = parameter.GetCustomAttribute<StateServiceTriggerAttribute>(false);
+            var attribute = parameter.GetCustomAttribute<StateServiceTriggerAttribute>(true);
 
             if (attribute == null)
                 return Task.FromResult<ITriggerBinding>(null);

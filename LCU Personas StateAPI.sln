@@ -16,11 +16,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Develop", "Develop", "{185F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deploy", "Deploy", "{632F1ED8-CC3B-462D-B150-034B611870E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCU.Personas.StateAPI.StateServices.TestAPI", "LCU.Personas.StateAPI.StateServices.TestAPI\LCU.Personas.StateAPI.StateServices.TestAPI.csproj", "{D466D742-5B97-414F-84C5-EF9478318232}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Personas.StateAPI.StateServices.TestAPI", "LCU.Personas.StateAPI.StateServices.TestAPI\LCU.Personas.StateAPI.StateServices.TestAPI.csproj", "{D466D742-5B97-414F-84C5-EF9478318232}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCU.Personas.StateAPI.TestHub", "LCU.Personas.StateAPI.TestHub\LCU.Personas.StateAPI.TestHub.csproj", "{3936AA76-60B1-4D72-90FB-76072D1AEF95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Personas.StateAPI.TestHub", "LCU.Personas.StateAPI.TestHub\LCU.Personas.StateAPI.TestHub.csproj", "{3936AA76-60B1-4D72-90FB-76072D1AEF95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCU.Personas.StateAPI.TestStates", "LCU.Personas.StateAPI.TestStates\LCU.Personas.StateAPI.TestStates.csproj", "{25EB4D38-D391-4CC6-A15F-A8532AFE67D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Personas.StateAPI.TestStates", "LCU.Personas.StateAPI.TestStates\LCU.Personas.StateAPI.TestStates.csproj", "{25EB4D38-D391-4CC6-A15F-A8532AFE67D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCU.Personas.StateAPI.Durable", "LCU.Personas.StateAPI.Durable\LCU.Personas.StateAPI.Durable.csproj", "{06688B34-1369-4429-BF47-25BCE342229F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +46,10 @@ Global
 		{25EB4D38-D391-4CC6-A15F-A8532AFE67D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25EB4D38-D391-4CC6-A15F-A8532AFE67D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25EB4D38-D391-4CC6-A15F-A8532AFE67D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06688B34-1369-4429-BF47-25BCE342229F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06688B34-1369-4429-BF47-25BCE342229F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06688B34-1369-4429-BF47-25BCE342229F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06688B34-1369-4429-BF47-25BCE342229F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +59,7 @@ Global
 		{D466D742-5B97-414F-84C5-EF9478318232} = {632F1ED8-CC3B-462D-B150-034B611870E1}
 		{3936AA76-60B1-4D72-90FB-76072D1AEF95} = {632F1ED8-CC3B-462D-B150-034B611870E1}
 		{25EB4D38-D391-4CC6-A15F-A8532AFE67D4} = {185FFC7B-D0AC-4B24-9E9B-196EC6AC2A2C}
+		{06688B34-1369-4429-BF47-25BCE342229F} = {185FFC7B-D0AC-4B24-9E9B-196EC6AC2A2C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0A1F403-B69B-40C0-9AFF-2FB7AB422DF0}

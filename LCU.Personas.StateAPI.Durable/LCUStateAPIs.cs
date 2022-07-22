@@ -8,7 +8,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace LCU.Personas.StateAPI
+namespace LCU.Personas.StateAPI.Durable
 {
     public class LCUStateAPIs<TStateEntity> : LCUStateAPI
     {

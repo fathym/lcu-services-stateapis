@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System;
 
-namespace LCU.Personas.StateAPI
+namespace LCU.Personas.StateAPI.Durable
 {
     public class LCUStateEntity
     {

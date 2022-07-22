@@ -10,12 +10,12 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace LCU.Personas.StateAPI
+namespace LCU.Personas.StateAPI.Durable
 {
     public class LCUStateHub<TStateEntity> : ServerlessHub
     {
         #region Helpers
-        protected virtual async Task addStateListener(InvocationContext invocationContext, IDurableEntityClient client, 
+        protected virtual async Task addStateListener(InvocationContext invocationContext, IDurableEntityClient client,
             string stateKey)
         {
             await Groups.AddToGroupAsync(invocationContext.ConnectionId, stateKey);

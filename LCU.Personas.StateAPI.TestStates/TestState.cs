@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LCU.Personas.StateAPI.Durable;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

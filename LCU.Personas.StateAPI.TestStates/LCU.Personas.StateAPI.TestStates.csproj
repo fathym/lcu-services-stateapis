@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LCU.Personas.StateAPI\LCU.Personas.StateAPI.csproj" />
+    <ProjectReference Include="..\LCU.Personas.StateAPI.Durable\LCU.Personas.StateAPI.Durable.csproj" />
   </ItemGroup>
 
 </Project>

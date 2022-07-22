@@ -6,6 +6,7 @@ using System;
 using System.Net.Http;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Fathym.API;
+using LCU.Personas.StateAPI.Durable;
 
 namespace LCU.Personas.StateAPI.StateServices.TestAPI.State
 {

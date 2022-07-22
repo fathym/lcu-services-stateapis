@@ -12,7 +12,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LCU.Personas.StateAPI
+namespace LCU.Personas.StateAPI.Durable
 {
     public class LCUStateAPI
     {

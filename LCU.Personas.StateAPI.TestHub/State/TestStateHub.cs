@@ -1,4 +1,5 @@
 ﻿using LCU.Personas.StateAPI;
+using LCU.Personas.StateAPI.Durable;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.SignalR.Management;
 using Microsoft.Azure.WebJobs;

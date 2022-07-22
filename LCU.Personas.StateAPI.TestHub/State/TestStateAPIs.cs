@@ -11,6 +11,7 @@ using Fathym.API;
 using LCU.Personas.StateAPI;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Fathym;
+using LCU.Personas.StateAPI.Durable;
 
 namespace LCU.Personas.StateAPI.TestHub.State
 {

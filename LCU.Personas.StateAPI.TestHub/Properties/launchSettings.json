@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "LCU.Personas.StateAPI.TestHub": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7077",
+      "launchBrowser": false
+    }
+  }
+}

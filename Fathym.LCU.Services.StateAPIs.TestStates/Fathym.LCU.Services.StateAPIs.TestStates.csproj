@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+
+    <!-- Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>false</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- Recommended: Embed symbols containing Source Link in the main file (exe/dll) -->
+    <DebugType>embedded</DebugType>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Copyright>2022 Fathym, Inc.</Copyright>
+    <PackageProjectUrl>www.fathym.com</PackageProjectUrl>
+    <PackageIcon>fathym-logo.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/fathym/lcu-services-stateapis</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>The Fathym LCU Services StateAPIs projects provide the foundation for building Fathym's dotnet applications.</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\fathym-logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fathym.LCU.Services.StateAPIs.Durable\Fathym.LCU.Services.StateAPIs.Durable.csproj" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

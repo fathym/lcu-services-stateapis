@@ -1,0 +1,92 @@
+name: Dotnet - Release
+
+on:
+  push:
+    branches: [master,integration,feature/**]
+  pull_request:
+    branches: [master,integration,feature/**]
+
+env:
+  Branches: master,integration,feature/**
+  MainBranch: master
+  NugetSource: https://api.nuget.org/v3/index.json
+  IncludeSymbols: false
+  SolutionFile: 'Fathym LCU Services StateAPIs.sln'
+  BuildConfiguration: Release
+
+jobs:
+  build:
+    # Build And Publish
+    name: Build and Publish
+    runs-on: ubuntu-latest
+    steps:
+      # checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
+
+      # set variables
+      - name: Set variables
+        id: vars
+        run: |
+          branch=${GITHUB_REF##*/}
+
+          echo ::set-output name=branchName::$branch
+           
+          if [ "$branch" == "${{ env.MainBranch }}" ]
+          then
+              echo "::set-output name=versionBump::minor"
+          else
+              echo "::set-output name=versionBump::patch"
+          fi
+
+      - run: |
+          echo "Set Variable Checks ${{ github.ref }}"
+          echo "Current branch is ${{ steps.vars.outputs.branchName }}"
+          echo "Version bump type is ${{ steps.vars.outputs.versionBump }}"
+
+      # bump version
+      - name: Bump version
+        uses: fathym/github-tag-action@master
+        id: versionBump
+        env:
+          DEFAULT_BUMP: ${{ steps.vars.outputs.versionBump }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BRANCHES: .*
+          WITH_V: false
+          DRY_RUN: true
+      - run: echo "New version is ${{ steps.versionBump.outputs.new_tag }}"
+      
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'         
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+        with:
+          nuget-api-key: ${{ secrets.NUGET_API_KEY }}
+          nuget-version: '5.x'        
+
+      - name: Restore dependencies
+        run: nuget restore '${{ env.SolutionFile }}'       
+
+      # Publish Fathym
+      - name: Build
+        run: dotnet build '${{ env.SolutionFile }}' --configuration ${{ env.BuildConfiguration }} -p:Version=${{ steps.versionBump.outputs.new_tag }} --no-restore
+        
+      - name: Publish        
+        run: nuget push **\*.nupkg -Source ${{ env.NugetSource }} -ApiKey ${{secrets.NUGET_API_KEY}} -Verbosity detailed  
+
+      # bump version and push tag
+      - name: Bump version and push tag
+        uses: fathym/github-tag-action@master
+        id: pushTag
+        env:
+          DEFAULT_BUMP: ${{ steps.vars.outputs.versionBump }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BRANCHES: .*
+          WITH_V: false
+          DRY_RUN: false
+      - run: echo "New version is ${{ steps.pushTag.outputs.new_tag }}"        

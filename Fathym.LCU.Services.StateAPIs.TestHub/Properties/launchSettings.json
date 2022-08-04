@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Fathym.LCU.Services.StateAPIs.TestHub": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7077",
+      "launchBrowser": false
+    }
+  }
+}

@@ -23,7 +23,9 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 
         #region Constructors
         public TestStateEntity()
-        { }
+        {
+            Test = "Hello World";
+        }
         #endregion
 
         #region API Methods

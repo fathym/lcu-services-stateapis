@@ -65,7 +65,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
             stateMeta.Metadata["$stateKey"] = stateKey;
 
-            await Clients.Groups(stateKey).SendAsync("state-update", stateMeta);
+            await Clients.Groups(stateKey).SendAsync("state-update", stateMeta.ToJSON());
 
             return state;
         }

@@ -57,7 +57,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         protected virtual async Task handleStateEmpty(IDurableEntityClient client, EntityId entityId)
         { }
 
-        protected async Task<TStateEntity> loadAndUpdateState(IDurableEntityClient client, string stateKey)
+        protected virtual async Task<TStateEntity> loadAndUpdateState(IDurableEntityClient client, string stateKey)
         {
             var state = await loadState(client, stateKey);
 

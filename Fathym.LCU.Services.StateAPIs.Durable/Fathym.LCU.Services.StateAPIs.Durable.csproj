@@ -8,7 +8,7 @@
 
     <!-- Embed source files that are not tracked by the source control manager in the PDB -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
     <!-- Recommended: Embed symbols containing Source Link in the main file (exe/dll) -->
@@ -24,6 +24,14 @@
   <PropertyGroup>
     <Description>The Fathym LCU Services StateAPIs projects provide the foundation for building Fathym's dotnet applications.</Description>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,7 +55,7 @@
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.EventGrid" Version="3.2.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.EventHubs" Version="5.1.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Kafka" Version="3.4.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Kafka" Version="3.5.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.RabbitMQ" Version="1.1.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.4.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.SignalRService" Version="1.7.0" />
@@ -56,7 +64,7 @@
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Warmup" Version="4.0.2" />
 		<PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.33" />
 		<PackageReference Include="Microsoft.Azure.WebJobs.Extensions.SignalRService" Version="1.8.0" />
-		<PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.7.2" />
+		<PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.8.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
 	</ItemGroup>
 

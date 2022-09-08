@@ -63,9 +63,9 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
             var stateMeta = state.JSONConvert<MetadataModel>() ?? new MetadataModel();
 
-            stateMeta.Metadata["$stateKey"] = stateKey;
+            stateMeta.Metadata["_stateKey"] = stateKey;
 
-            await Clients.Groups(stateKey).SendAsync("state-update", stateMeta.ToJSON());
+            await Clients.Groups(stateKey).SendAsync("state-update", Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(stateMeta.ToJSON()));
 
             return state;
         }

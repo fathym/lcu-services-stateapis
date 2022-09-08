@@ -16,17 +16,14 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
     public class TestStateEntity : TestState, ITestState
     {
         #region Fields
-        protected readonly IHttpClientFactory clientFactory;
         #endregion
 
         #region Properties
         #endregion
 
         #region Constructors
-        public TestStateEntity(IHttpClientFactory clientFactory)
-        {
-            this.clientFactory = clientFactory;
-        }
+        public TestStateEntity()
+        { }
         #endregion
 
         #region API Methods
@@ -41,7 +38,7 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
         public async Task Run([EntityTrigger] IDurableEntityContext ctx)
         {
             if (!ctx.HasState)
-                ctx.SetState(new TestState());
+                ctx.SetState(new TestStateEntity());
 
             await ctx.DispatchAsync<TestStateEntity>();
         }

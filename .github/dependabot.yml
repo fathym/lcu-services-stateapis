@@ -12,10 +12,10 @@ registries:
     key: ${{ secrets.NUGET_API_KEY }}
 
 updates:
-  - package-ecosystem: Nuget
+  - package-ecosystem: nuget
     directory: "/"
     schedule:
-      interval: hourly      
+      interval: daily      
     allow:
       # Allow updates for Lodash
       - dependency-name: "Fathym*"           

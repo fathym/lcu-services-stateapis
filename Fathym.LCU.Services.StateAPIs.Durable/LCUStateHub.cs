@@ -1,6 +1,7 @@
 ﻿using Fathym;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.SignalR.Management;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
@@ -12,17 +13,49 @@ using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.Durable
 {
-    public class LCUStateHub<TStateEntity> : ServerlessHub
+    public class StateEntityStore<TStateEntity> : ServerlessHub
+         where TStateEntity : class, new()
     {
-        #region Helpers
-        protected virtual async Task addStateListener(InvocationContext invocationContext, IDurableEntityClient client,
-            string stateKey)
+        #region Fields
+        protected virtual IDurableEntityContext context
         {
-            await Groups.AddToGroupAsync(invocationContext.ConnectionId, stateKey);
-
-            await loadAndUpdateState(client, stateKey);
+            get
+            {
+                return Entity.Current;
+            }
         }
+        #endregion
 
+        #region Properties
+
+        #endregion
+
+        #region Constructors
+
+        #endregion
+
+        #region Life Cycle
+        [FunctionName(nameof(TStateEntity))]
+        protected virtual async Task initializeStateEntity([EntityTrigger] IDurableEntityContext ctx,
+            [SignalR(HubName = nameof(TStateEntity))] IAsyncCollector<SignalRMessage> signalRMessages)
+        {
+            if (!ctx.HasState)
+                ctx.SetState(new TStateEntity());
+
+            ctx.GetState<TStateEntity>();
+
+            await ctx.DispatchAsync<TStateEntity>();
+        }
+        #endregion
+
+        #region Actions
+
+        #region Action Orchestrations
+
+        #endregion
+        #endregion
+
+        #region Helpers
         protected virtual async Task attachState(InvocationContext invocationContext, string stateKey,
             IDurableEntityClient client, ILogger logger)
         {
@@ -33,11 +66,6 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             await loadAndUpdateState(client, stateKey);
 
             //  TODO:  map connection to user
-        }
-
-        protected virtual async Task removeStateListener(InvocationContext invocationContext, string stateKey)
-        {
-            await Groups.RemoveFromGroupAsync(invocationContext.ConnectionId, stateKey);
         }
 
         protected virtual async Task connected(InvocationContext invocationContext, IDurableEntityClient client, ILogger logger)
@@ -63,9 +91,9 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
             var stateMeta = state.JSONConvert<MetadataModel>() ?? new MetadataModel();
 
-            stateMeta.Metadata["_stateKey"] = stateKey;
+            stateMeta.Metadata["$stateKey"] = stateKey;
 
-            await Clients.Groups(stateKey).SendAsync("state-update", Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(stateMeta.ToJSON()));
+            await Clients.Groups(stateKey).SendAsync("state-update", stateMeta.ToJToken());
 
             return state;
         }

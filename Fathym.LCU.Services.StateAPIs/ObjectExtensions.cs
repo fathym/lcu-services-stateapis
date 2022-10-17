@@ -8,6 +8,11 @@ namespace Fathym.LCU.Services.StateAPIs
         {
             return Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JToken>(obj.ToJSON());
         }
+
+        public static T ToJToken<T>(this object obj)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(obj.ToJSON());
+        }
     }
 
 }

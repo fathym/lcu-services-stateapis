@@ -9,16 +9,23 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Host;
 using Fathym;
-using Fathym.LCU.Services.StateAPIs.TestStates;
+using Microsoft.Azure.WebJobs.Extensions.SignalRService;
+using Fathym.LCU.Services.StateAPIs.Durable;
 
 namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 {
-    public class TestStateEntity : TestState, ITestState
+    public interface ITestState
+    {
+        Task SetTest(string test);
+    }
+
+    public class TestStateEntity : LCUStateEntity, ITestState
     {
         #region Fields
         #endregion
 
-        #region Properties
+        #region Properties (State)
+        public virtual string Test { get; set; }
         #endregion
 
         #region Constructors
@@ -37,10 +44,13 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 
         #region Life Cycle
         [FunctionName(nameof(TestStateEntity))]
-        public async Task Run([EntityTrigger] IDurableEntityContext ctx)
+        public async Task Run([EntityTrigger] IDurableEntityContext ctx,
+            [SignalR(HubName = nameof(TestStateHub))] IAsyncCollector<SignalRMessage> signalRMessages)
         {
             if (!ctx.HasState)
                 ctx.SetState(new TestStateEntity());
+
+            ctx.GetState<TestStateEntity>();
 
             await ctx.DispatchAsync<TestStateEntity>();
         }

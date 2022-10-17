@@ -15,7 +15,11 @@ using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 {
-    public class TestStateHub : LCUStateHub<TestStateEntity>
+    public class TestEntityStore : StateEntityStore<TestStateEntity>
+    {
+
+    }
+    public class TestStateHub : LCUStateHub<TestStateEntity>                                                 
     {
         #region Life Cycle
         [FunctionName(nameof(TestStateHub_Negotiate))]

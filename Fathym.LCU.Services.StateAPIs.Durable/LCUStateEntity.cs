@@ -16,16 +16,6 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         #endregion
 
         #region Helpers
-        protected virtual T newtonsoftConvert<T>(T obj)
-        {
-            //  This is a little hack to handle the issue with Durable Entities not using System.Text.Json and JsonElement
-            //      not serializing correctly inside newtonsoft.
-            var objStr = obj.ToJSON();
-
-            obj = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(objStr);
-
-            return obj;
-        }
         #endregion
     }
 }

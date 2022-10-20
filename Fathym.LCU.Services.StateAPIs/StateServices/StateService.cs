@@ -22,9 +22,9 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
 
         Task Stop();
 
-        Task AttachState(string stateKey);
+        Task AttachState(string stateType, string stateKey);
 
-        Task UnattachState(string stateKey);
+        Task UnattachState(string stateType, string stateKey);
     }
 
     public class StateService : IStateService
@@ -86,6 +86,8 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
                     }
                     catch (Exception ex)
                     {
+                        Hub = null;
+
                         await handleStartError(ex);
 
                         return true;
@@ -102,14 +104,14 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
             return Hub?.StopAsync() ?? Task.CompletedTask;
         }
 
-        public virtual Task AttachState(string stateKey)
+        public virtual Task AttachState(string stateType, string stateKey)
         {
-            return Hub.InvokeAsync($"AttachState", stateKey);
+            return Hub.InvokeAsync($"AttachState", stateType, stateKey);
         }
 
-        public virtual Task UnattachState(string stateKey)
+        public virtual Task UnattachState(string stateType, string stateKey)
         {
-            return Hub.InvokeAsync($"UnattachState", stateKey);
+            return Hub.InvokeAsync($"UnattachState", stateType, stateKey);
         }
         #endregion
 

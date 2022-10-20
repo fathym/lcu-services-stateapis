@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Fathym;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
+using Fathym.LCU.Services.StateAPIs.Durable;
+using Fathym.LCU.Services.StateAPIs.TestHub.State;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
 {
@@ -16,9 +18,14 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         #endregion
 
         #region API Methods
-        public virtual Task Broadcast(MetadataModel testModel)
+        public virtual Task Broadcast(BroadcastRequest testModel)
         {
-            return Hub.InvokeAsync("TestStateHub_Broadcast", testModel);
+            return Hub.InvokeAsync("Broadcast", testModel);
+        }
+
+        public virtual Task SetTest(SetTestRequest request)
+        {
+            return Hub.InvokeAsync("SetTest", request);
         }
         #endregion
     }

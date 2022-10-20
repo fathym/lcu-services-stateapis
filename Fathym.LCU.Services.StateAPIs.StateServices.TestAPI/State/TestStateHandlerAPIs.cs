@@ -7,10 +7,11 @@ using System.Net.Http;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Fathym.API;
 using Fathym.LCU.Services.StateAPIs.Durable;
+using Fathym.LCU.Services.StateAPIs.TestHub.State;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
 {
-    public class TestStateHandlerAPIs : LCUStateAPI
+    public class TestStateHandlerAPIs : StateActions
     {
         #region Fields
         #endregion
@@ -19,28 +20,26 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         #endregion
 
         #region Constructors
-        public TestStateHandlerAPIs(ILogger<TestStateHandlerAPIs> logger)
-            : base(logger)
+        public TestStateHandlerAPIs()
+            : base()
         { }
         #endregion
 
         #region API Methods
         #region Routes
-        private const string getStateRoute = $"attach";
+        private const string attachStateRoute = "attach";
+
+        private const string setTestStateRoute = "set-test";
         #endregion
 
         [FunctionName($"{nameof(TestStateHandlerAPIs_AttachState)}")]
-        public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_AttachState(ILogger log,
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = getStateRoute)] HttpRequestMessage req,
-            [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
+        public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_AttachState(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = attachStateRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
         {
-            return await withAPIBoundary<MetadataModel, BaseResponse>(req, async (request, response) =>
+            return await withAPIBoundary<StateRequest, BaseResponse>(logger, req, async (request, response) =>
             {
-                var stateKey = request.Metadata["StateKey"].ToString();
+                logger.LogInformation($"TestStateHandlerAPIs_AttachState => {request.StateKey}");
 
-                logger.LogInformation($"TestStateHandlerAPIs_AttachState => {stateKey}");
-
-                await stateSvc.AttachState(stateKey);
+                await stateSvc.AttachState(request.StateType, request.StateKey);
 
                 response.Status = Status.Success;
 
@@ -48,12 +47,25 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
             }).Run();
         }
 
-        [FunctionName($"{nameof(TestStateHandlerAPIs)}_{nameof(HandleBroadcast)}")]
-        public virtual async Task HandleBroadcast(ILogger log,
-            [StateServiceTrigger(URL = "TEST_STATE_HUB_URL")] string stateStr,
-            [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
+        [FunctionName($"{nameof(TestStateHandlerAPIs_HandleBroadcast)}")]
+        public virtual async Task TestStateHandlerAPIs_HandleBroadcast(ILogger logger, [StateServiceTrigger(URL = "TEST_STATE_HUB_URL")] string stateStr, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
         {
             var state = stateStr.FromJSON<MetadataModel>();
+
+            logger.LogInformation(stateStr);
+        }
+
+        [FunctionName($"{nameof(TestStateHandlerAPIs_SetTest)}")]
+        public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_SetTest(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = setTestStateRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
+        {
+            return await withAPIBoundary<SetTestRequest, BaseResponse>(logger, req, async (request, response) =>
+            {
+                await stateSvc.SetTest(request);
+
+                response.Status = Status.Success;
+
+                return response;
+            }).Run();
         }
         #endregion
     }

@@ -10,6 +10,7 @@
 		<PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.3" />
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\Fathym.LCU.Services.StateAPIs.TestHub\Fathym.LCU.Services.StateAPIs.TestHub.csproj" />
 	  <ProjectReference Include="..\Fathym.LCU.Services.StateAPIs.TestStates\Fathym.LCU.Services.StateAPIs.TestStates.csproj" />
 	</ItemGroup>
 	<ItemGroup>

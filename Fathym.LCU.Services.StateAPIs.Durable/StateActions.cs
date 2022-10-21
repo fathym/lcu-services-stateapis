@@ -20,7 +20,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
     /// <summary>
     /// State Actions serve as the entry for external systems to access the Entity Stores and data configurations.
     /// </summary>
-    public class StateActions : ServerlessHub
+    public abstract class StateActions : ServerlessHub
     {
         #region Fields
         #endregion
@@ -32,6 +32,8 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         #endregion
 
         #region Helpers
+        protected abstract Task callLoadAndUpdateStateActivity(IDurableOrchestrationContext context);
+
         protected virtual async Task<TEntityStore> loadAndUpdateState<TEntityStore>(ILogger logger, IDurableEntityClient client, string stateKey)
         {
             logger.LogDebug($"Loading and updating state: {stateKey}");

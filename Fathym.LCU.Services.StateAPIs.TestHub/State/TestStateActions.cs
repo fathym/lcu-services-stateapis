@@ -122,6 +122,15 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
                 StateType = typeof(TestEntityStore).Name
             });
         }
+
+        protected override async Task callLoadAndUpdateStateActivity(IDurableOrchestrationContext context)
+        {
+            await context.CallActivityAsync(nameof(Activity_LoadAndUpdateState), new StateRequest()
+            {
+                StateKey = context.InstanceId,
+                StateType = typeof(TestEntityStore).Name
+            });
+        }
         #endregion
         #endregion
         #endregion

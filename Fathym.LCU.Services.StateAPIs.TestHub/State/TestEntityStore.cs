@@ -29,7 +29,7 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 
         #region API Methods
         [FunctionName(nameof(TestEntityStore))]
-        public async Task TestEntityStore_Run([EntityTrigger] IDurableEntityContext ctx, [SignalR(HubName = nameof(TestEntityStore))] IAsyncCollector<SignalRMessage> signalRMessages)
+        public async Task TestEntityStore_Run([EntityTrigger] IDurableEntityContext ctx, [SignalR(HubName = nameof(TestStateActions))] IAsyncCollector<SignalRMessage> signalRMessages)
         {
             await initializeStateEntity(ctx, signalRMessages);
         }

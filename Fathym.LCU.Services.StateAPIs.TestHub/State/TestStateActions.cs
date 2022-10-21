@@ -84,7 +84,7 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
         #endregion
 
         [FunctionName($"GetState")]
-        public virtual async Task<HttpResponseMessage> GetState(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "get", Route = getStateRoute)] HttpRequestMessage req, [DurableClient] IDurableEntityClient client, [SignalR(HubName = nameof(TestEntityStore))] IAsyncCollector<SignalRMessage> signalRMessages, string stateType, string stateKey)
+        public virtual async Task<HttpResponseMessage> GetState(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "get", Route = getStateRoute)] HttpRequestMessage req, [DurableClient] IDurableEntityClient client, [SignalR(HubName = nameof(TestStateActions))] IAsyncCollector<SignalRMessage> signalRMessages, string stateType, string stateKey)
         {
             return await withAPIBoundary<BaseResponse<TestEntityStore>>(logger, req, async (response) =>
             {

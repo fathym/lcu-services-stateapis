@@ -41,7 +41,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             this.logger = logger;
         }
         #endregion
-
+        
         #region Life Cycle
         protected virtual async Task initializeStateEntity(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> signalRMessages)
         {

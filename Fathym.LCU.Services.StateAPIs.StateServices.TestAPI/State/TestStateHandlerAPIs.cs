@@ -11,7 +11,7 @@ using Fathym.LCU.Services.StateAPIs.TestHub.State;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
 {
-    public class TestStateHandlerAPIs : StateActions
+    public class TestStateHandlerAPIs : LCUStateAPI
     {
         #region Fields
         #endregion
@@ -20,8 +20,8 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         #endregion
 
         #region Constructors
-        public TestStateHandlerAPIs()
-            : base()
+        public TestStateHandlerAPIs(ILogger<TestStateHandlerAPIs> logger)
+            : base(logger)
         { }
         #endregion
 
@@ -35,7 +35,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         [FunctionName($"{nameof(TestStateHandlerAPIs_AttachState)}")]
         public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_AttachState(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = attachStateRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
         {
-            return await withAPIBoundary<StateRequest, BaseResponse>(logger, req, async (request, response) =>
+            return await withAPIBoundary<StateRequest, BaseResponse>(req, async (request, response) =>
             {
                 logger.LogInformation($"TestStateHandlerAPIs_AttachState => {request.StateKey}");
 
@@ -58,7 +58,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         [FunctionName($"{nameof(TestStateHandlerAPIs_SetTest)}")]
         public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_SetTest(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = setTestStateRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
         {
-            return await withAPIBoundary<SetTestRequest, BaseResponse>(logger, req, async (request, response) =>
+            return await withAPIBoundary<SetTestRequest, BaseResponse>(req, async (request, response) =>
             {
                 await stateSvc.SetTest(request);
 

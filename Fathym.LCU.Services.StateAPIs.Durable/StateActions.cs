@@ -52,14 +52,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             logger.LogInformation($"Starting orchestration with id {instanceId}");
 
             if (!instanceId.IsNullOrEmpty())
-            {
-                var instanceStatus = await orchClient.GetStatusAsync(instanceId);
-
-                var timeout = DateTime.UtcNow.AddSeconds(terminateTimeoutSeconds);
-
-                if (instanceStatus.RuntimeStatus == OrchestrationRuntimeStatus.Running && instanceStatus.LastUpdatedTime < timeout)
-                    await orchClient.TerminateAsync(instanceId, "Timeout");
-            }
+                await orchClient.TerminateWithCheckAsync(instanceId, "Timeout", terminateTimeoutSeconds: terminateTimeoutSeconds);
 
             instanceId = await orchClient.StartNewAsync(orchestrationFunctionName, instanceId, input);
 

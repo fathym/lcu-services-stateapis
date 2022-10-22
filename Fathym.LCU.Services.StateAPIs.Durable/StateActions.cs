@@ -32,7 +32,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         #endregion
 
         #region Helpers
-        protected abstract Task callLoadAndUpdateStateActivity(IDurableOrchestrationContext context);
+        protected abstract Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context);
 
         protected virtual async Task<TEntityStore> loadAndUpdateState<TEntityStore>(ILogger logger, IDurableEntityClient client, string stateKey)
         {

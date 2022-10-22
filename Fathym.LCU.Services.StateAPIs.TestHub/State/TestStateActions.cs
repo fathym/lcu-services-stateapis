@@ -123,7 +123,7 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
             });
         }
 
-        protected override async Task callLoadAndUpdateStateActivity(IDurableOrchestrationContext context)
+        protected override async Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context)
         {
             await context.CallActivityAsync(nameof(Activity_LoadAndUpdateState), new StateRequest()
             {

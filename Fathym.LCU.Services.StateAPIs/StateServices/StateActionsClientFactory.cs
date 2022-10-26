@@ -6,29 +6,29 @@ using System.Linq;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices
 {
-    public class StateServiceFactory : IStateServiceFactory
+    public class StateActionsClientFactory : IStateActionsClientFactory
     {
         #region Fields
-        protected readonly IEnumerable<IStateService> stateSvcs;
+        protected readonly IEnumerable<IStateActionsClient> stateSvcs;
         #endregion
 
         #region Constructors
-        public StateServiceFactory(IEnumerable<IStateService> stateSvcs)
+        public StateActionsClientFactory(IEnumerable<IStateActionsClient> stateSvcs)
         {
             this.stateSvcs = stateSvcs;
         }
         #endregion
 
-        public IStateService CreateStateService(string url, HttpTransportType transport,
+        public IStateActionsClient CreateStateActionsClient(string url, HttpTransportType transport,
             Type type = null)
         {
             var client = stateSvcs.FirstOrDefault(ss => ss.URL == url);
 
             if (client == null && type != null)
-                client = (IStateService)Activator.CreateInstance(type, url, transport);
+                client = (IStateActionsClient)Activator.CreateInstance(type, url, transport);
             
             if (client == null)
-                client = new StateService(url, transport);
+                client = new StateActionsClient(url, transport);
 
             client.Start().Wait();
 

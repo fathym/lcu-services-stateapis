@@ -4,48 +4,49 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 {
-    public interface ITestEntityStoreActions
+    public interface ITestGroupEntityStoreActions
     {
-        Task SetTest(string test);
+        Task AddGroup(string group);
     }
 
-    public class TestEntityStore : StateEntityStore<TestEntityStore>, ITestEntityStoreActions
+    public class TestGroupEntityStore : StateEntityStore<TestGroupEntityStore>, ITestGroupEntityStoreActions
     {
         #region Properties (State)
-        public virtual string Test { get; set; }
+        public virtual HashSet<string> Groups { get; set; }
         #endregion
 
         #region Constructors
-        public TestEntityStore(ILogger<TestEntityStore> logger = null)
+        public TestGroupEntityStore(ILogger<TestGroupEntityStore> logger = null)
             : base(logger)
         {
-            Test = "Hello World";
+            Groups = new HashSet<string>();
         }
         #endregion
 
         #region API Methods
-        [FunctionName(nameof(TestEntityStore))]
-        public async Task TestEntityStore_Run([EntityTrigger] IDurableEntityContext ctx)
+        [FunctionName(nameof(TestGroupEntityStore))]
+        public async Task TestGroupEntityStore_Run([EntityTrigger] IDurableEntityContext ctx)
         {
             await initializeStateEntity(ctx);
         }
 
         #region Entity Actions
-        public virtual async Task SetTest(string test)
+        public virtual async Task AddGroup(string group)
         {
-            Test = test;
+            Groups.Add(group);
         }
         #endregion
         #endregion
 
         #region Helpers
-        protected override TestEntityStore loadInitialState()
+        protected override TestGroupEntityStore loadInitialState()
         {
-            return new TestEntityStore();
+            return new TestGroupEntityStore();
         }
         #endregion
     }

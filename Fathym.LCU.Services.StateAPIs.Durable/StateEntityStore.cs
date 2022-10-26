@@ -43,16 +43,12 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         #endregion
         
         #region Life Cycle
-        protected virtual async Task initializeStateEntity(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> signalRMessages)
+        protected virtual async Task initializeStateEntity(IDurableEntityContext ctx)
         {
             if (!ctx.HasState)
                 await handleStateEmpty(ctx);
 
             await ctx.DispatchAsync<TStateEntity>();
-
-            var state = ctx.GetState<TStateEntity>();
-
-            await signalStateUpdate(signalRMessages, ctx.EntityId.EntityKey, state);
         }
         #endregion
 
@@ -80,20 +76,6 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             obj = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(objStr);
 
             return obj;
-        }
-        protected virtual async Task signalStateUpdate(IAsyncCollector<SignalRMessage> signalRMessages, string stateKey, TStateEntity state, string target = "state-update")
-        {
-            //var stateMeta = state.JSONConvert<MetadataModel>() ?? new MetadataModel();
-
-            //stateMeta.Metadata["$stateKey"] = stateKey;
-
-            await signalRMessages.AddAsync(
-                new SignalRMessage
-                {
-                    GroupName = stateKey,
-                    Target = target,
-                    Arguments = new object[] { state.ToJToken() }
-                });
         }
         #endregion
     }

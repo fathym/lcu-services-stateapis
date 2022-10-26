@@ -6,6 +6,15 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 {
     public static class StateExtensions
     {
+        public static TActions CreateEntityProxy<TEntityStore, TActions>(this IDurableOrchestrationContext context, string instanceId = null)
+        {
+            var entityId = new EntityId(typeof(TEntityStore).Name, instanceId ?? context.InstanceId);
+
+            var entityProxy = context.CreateEntityProxy<TActions>(entityId);
+
+            return entityProxy;
+        }
+
         public static async Task<TEntityStore> LoadEntityFromStore<TEntityStore>(this IDurableEntityClient client, string id)
         {
             var entityId = new EntityId(typeof(TEntityStore).Name, id);
@@ -37,11 +46,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
             var timeout = DateTime.UtcNow.AddSeconds(terminateTimeoutSeconds);
 
-            if (instanceStatus.RuntimeStatus == OrchestrationRuntimeStatus.Running && instanceStatus.LastUpdatedTime < timeout)
-                await orchClient.TerminateAsync(instanceId, reason);
-            var processStatus = await orchClient.GetStatusAsync(instanceId);
-
-            if (processStatus.IsRunning())
+            if (instanceStatus.IsRunning() && instanceStatus.LastUpdatedTime < timeout)
                 await orchClient.TerminateAsync(instanceId, reason);
         }
     }

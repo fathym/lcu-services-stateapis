@@ -1,5 +1,6 @@
 ﻿using Fathym.API;
 using Fathym.API.Fluent;
+using Fathym.LCU.Services.StateAPIs.StateServices;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.SignalR.Management;
@@ -32,7 +33,18 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         #endregion
 
         #region Helpers
-        protected abstract Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context);
+        protected abstract string buildLoadAndUpdateActivityName();
+
+        protected virtual async Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context)
+        {
+            var loadAndUpdateActivityName = buildLoadAndUpdateActivityName();
+
+            await context.CallActivityAsync(loadAndUpdateActivityName, new StateRequest()
+            {
+                StateType = typeof(TEntityStore).Name,
+                StateKey = context.InstanceId
+            });
+        }
 
         protected virtual async Task<TEntityStore> loadAndUpdateState<TEntityStore>(ILogger logger, IDurableEntityClient client, string stateKey)
         {
@@ -40,11 +52,16 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
             var state = await client.LoadEntityFromStore<TEntityStore>(stateKey);
 
-            //var stateMeta = state.JSONConvert<MetadataModel>() ?? new MetadataModel();
+            var stateType = typeof(TEntityStore).Name;
 
-            //stateMeta.Metadata["$stateKey"] = stateKey;
+            var stateLookup = $"{stateType}|{stateKey}";
 
-            await Clients.Groups(stateKey).SendAsync("state-update", state.ToJToken());
+            await Clients.Groups(stateLookup).SendAsync(stateLookup, new StateUpdateRequest<TEntityStore>()
+            {
+                StateType = stateType,
+                StateKey = stateKey,
+                State = state
+            }.ToJToken());
 
             return state;
         }
@@ -66,7 +83,13 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         {
             logger?.LogInformation($"{invocationContext.ConnectionId} has connected");
 
-            await Groups.AddToGroupAsync(invocationContext.ConnectionId, stateKey);
+            var stateType = typeof(TEntityStore).Name;
+
+            var stateLookup = $"{stateType}|{stateKey}";
+
+            //  TODO:  Verify user access to state
+
+            await Groups.AddToGroupAsync(invocationContext.ConnectionId, stateLookup);
 
             await loadAndUpdateState<TEntityStore>(logger, client, stateKey);
 
@@ -106,7 +129,11 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         {
             logger?.LogInformation($"{invocationContext.ConnectionId} has connected");
 
-            await Groups.RemoveFromGroupAsync(invocationContext.ConnectionId, stateKey);
+            var stateType = typeof(TEntityStore).Name;
+
+            var stateLookup = $"{stateType}|{stateKey}";
+
+            await Groups.RemoveFromGroupAsync(invocationContext.ConnectionId, stateLookup);
 
             await loadAndUpdateState<TEntityStore>(logger, client, stateKey);
         }

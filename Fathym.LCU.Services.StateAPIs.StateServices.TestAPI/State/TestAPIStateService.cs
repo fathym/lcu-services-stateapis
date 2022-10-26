@@ -18,9 +18,14 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         #endregion
 
         #region API Methods
-        public virtual Task Broadcast(BroadcastRequest testModel)
+        public virtual Task AddGroup(AddGroupRequest request)
         {
-            return Hub.InvokeAsync("Broadcast", testModel);
+            return Hub.InvokeAsync("AddGroup", request);
+        }
+
+        public virtual Task Broadcast(BroadcastRequest request)
+        {
+            return Hub.InvokeAsync("Broadcast", request);
         }
 
         public virtual Task SetTest(SetTestRequest request)

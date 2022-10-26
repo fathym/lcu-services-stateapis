@@ -1,5 +1,6 @@
 ﻿using Fathym.API;
 using Fathym.LCU.Services.StateAPIs.Durable;
+using Fathym.LCU.Services.StateAPIs.StateServices;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -11,6 +12,11 @@ using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 {
+    public class AddGroupRequest : StateRequest
+    {
+        public virtual string Group { get; set; }
+    }
+
     public class BroadcastRequest : StateRequest
     { }
 
@@ -52,6 +58,8 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
         {
             if (stateType == "TestEntityStore")
                 await attachState<TestEntityStore>(logger, invocationContext, client, stateKey);
+            else if (stateType == "TestGroupEntityStore")
+                await attachState<TestGroupEntityStore>(logger, invocationContext, client, stateKey);
         }
 
         [FunctionName($"{nameof(UnattachState)}")]
@@ -59,16 +67,27 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
         {
             if (stateType == "TestEntityStore")
                 await unattachState<TestEntityStore>(logger, invocationContext, client, stateKey);
+            else if (stateType == "TestGroupEntityStore")
+                await unattachState<TestGroupEntityStore>(logger, invocationContext, client, stateKey);
         }
         #endregion
 
         #region State Actions
+        [FunctionName($"{nameof(AddGroup)}")]
+        public virtual async Task AddGroup(ILogger logger, [SignalRTrigger] InvocationContext invocationContext,
+            [DurableClient] IDurableOrchestrationClient orchClient, AddGroupRequest request)
+        {
+            await startOrchestration(logger, orchClient, nameof(AddGroupOrchestrator), instanceId: request.StateKey, input: request.Group);
+        }
+
         [FunctionName($"{nameof(Broadcast)}")]
         public virtual async Task Broadcast(ILogger logger, [SignalRTrigger] InvocationContext invocationContext,
             [DurableClient] IDurableEntityClient client, BroadcastRequest request)
         {
             if (request.StateType == "TestEntityStore")
                 await loadAndUpdateState<TestEntityStore>(logger, client, request.StateKey);
+            else if (request.StateType == "TestGroupEntityStore")
+                await loadAndUpdateState<TestGroupEntityStore>(logger, client, request.StateKey);
         }
 
         [FunctionName($"{nameof(SetTest)}")]
@@ -86,10 +105,12 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
         [FunctionName($"GetState")]
         public virtual async Task<HttpResponseMessage> GetState(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "get", Route = getStateRoute)] HttpRequestMessage req, [DurableClient] IDurableEntityClient client, [SignalR(HubName = nameof(TestStateActions))] IAsyncCollector<SignalRMessage> signalRMessages, string stateType, string stateKey)
         {
-            return await withAPIBoundary<BaseResponse<TestEntityStore>>(logger, req, async (response) =>
+            return await withAPIBoundary<BaseResponse<MetadataModel>>(logger, req, async (response) =>
             {
                 if (stateType == "TestEntityStore")
-                    response.Model = await loadAndUpdateState<TestEntityStore>(logger, client, stateKey);
+                    response.Model = (await loadAndUpdateState<TestEntityStore>(logger, client, stateKey)).JSONConvert<MetadataModel>();
+                else if (stateType == "TestGroupEntityStore")
+                    response.Model = (await loadAndUpdateState<TestGroupEntityStore>(logger, client, stateKey)).JSONConvert<MetadataModel>();
 
                 response.Status = response.Model != null ? Status.Success : Status.NotLocated;
 
@@ -99,12 +120,19 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
         #endregion
 
         #region Action Orchestrations
-        [FunctionName(nameof(Activity_LoadAndUpdateState))]
-        public virtual async Task Activity_LoadAndUpdateState(ILogger logger, [DurableClient] IDurableEntityClient client, [ActivityTrigger] StateRequest request)
+        #region Add Group Orchestration
+        [FunctionName($"{nameof(AddGroupOrchestrator)}")]
+        public virtual async Task AddGroupOrchestrator(ILogger logger, [OrchestrationTrigger] IDurableOrchestrationContext context, [SignalR(HubName = nameof(TestStateActions))] IAsyncCollector<SignalRMessage> signalRMessages)
         {
-            if (request.StateType == "TestEntityStore")
-                await loadAndUpdateState<TestEntityStore>(logger, client, request.StateKey);
+            var group = context.GetInput<string>();
+
+            var store = context.CreateEntityProxy<TestGroupEntityStore, ITestGroupEntityStoreActions>();
+
+            await store.AddGroup(group);
+
+            await callLoadAndUpdateStateActivity<TestGroupEntityStore>(context);
         }
+        #endregion
 
         #region Set Test Orchestration
         [FunctionName($"{nameof(SetTestOrchestrator)}")]
@@ -116,27 +144,28 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 
             await store.SetTest(test);
 
-            await context.CallActivityAsync(nameof(Activity_LoadAndUpdateState), new StateRequest()
-            {
-                StateKey = context.InstanceId,
-                StateType = typeof(TestEntityStore).Name
-            });
+            await callLoadAndUpdateStateActivity<TestEntityStore>(context);
         }
+        #endregion
 
-        protected override async Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context)
+        #region Activity Helpers
+        [FunctionName(nameof(Activity_LoadAndUpdateState))]
+        public virtual async Task Activity_LoadAndUpdateState(ILogger logger, [DurableClient] IDurableEntityClient client, [ActivityTrigger] StateRequest request)
         {
-            await context.CallActivityAsync(nameof(Activity_LoadAndUpdateState), new StateRequest()
-            {
-                StateKey = context.InstanceId,
-                StateType = typeof(TestEntityStore).Name
-            });
+            if (request.StateType == "TestEntityStore")
+                await loadAndUpdateState<TestEntityStore>(logger, client, request.StateKey);
+            else if (request.StateType == "TestGroupEntityStore")
+                await loadAndUpdateState<TestGroupEntityStore>(logger, client, request.StateKey);
         }
         #endregion
         #endregion
         #endregion
 
         #region Helpers
-
+        protected override string buildLoadAndUpdateActivityName()
+        {
+            return nameof(Activity_LoadAndUpdateState);
+        }
         #endregion
     }
 }

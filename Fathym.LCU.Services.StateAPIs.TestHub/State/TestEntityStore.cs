@@ -15,7 +15,7 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 
     public class TestEntityStore : StateEntityStore<TestEntityStore>, ITestEntityStoreActions
     {
-        #region Properties (State)
+        #region Properties
         public virtual string Test { get; set; }
         #endregion
 

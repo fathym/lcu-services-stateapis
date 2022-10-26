@@ -28,7 +28,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             }
         }
 
-        protected readonly ILogger<StateEntityStore<TStateEntity>> logger;
+        protected readonly ILogger logger;
         #endregion
 
         #region Properties
@@ -36,7 +36,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         #endregion
 
         #region Constructors
-        public StateEntityStore(ILogger<StateEntityStore<TStateEntity>> logger)
+        public StateEntityStore(ILogger logger)
         {
             this.logger = logger;
         }

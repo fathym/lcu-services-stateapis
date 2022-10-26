@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices
 {
-    public interface IStateService
+    public interface IStateActionsClient
     {
         event EventHandler<HubConnectionStartedEventArgs> Started;
 
@@ -28,7 +28,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
         Task UnattachState(string stateType, string stateKey);
     }
 
-    public class StateService : IStateService
+    public class StateActionsClient : IStateActionsClient
     {
         #region Fields
         protected readonly Dictionary<string, HashSet<string>> attachedStates;
@@ -49,7 +49,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
         #endregion
 
         #region Constructors
-        public StateService(string url, HttpTransportType transport)
+        public StateActionsClient(string url, HttpTransportType transport)
         {
             attachedStates = new Dictionary<string, HashSet<string>>();
 

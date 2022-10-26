@@ -4,8 +4,8 @@ using System;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices
 {
-    public interface IStateServiceFactory
+    public interface IStateActionsClientFactory
     {
-        public IStateService CreateStateService(string url, HttpTransportType transport, Type type = null);
+        public IStateActionsClient CreateStateActionsClient(string url, HttpTransportType transport, Type type = null);
     }
 }

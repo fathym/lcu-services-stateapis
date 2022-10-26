@@ -34,7 +34,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         #endregion
 
         [FunctionName($"{nameof(TestStateHandlerAPIs_AttachState)}")]
-        public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_AttachState(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = attachStateRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
+        public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_AttachState(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = attachStateRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestStateActionsClient stateSvc)
         {
             return await withAPIBoundary<StateRequest, BaseResponse>(req, async (request, response) =>
             {
@@ -49,7 +49,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         }
 
         [FunctionName($"{nameof(TestStateHandlerAPIs_HandleBroadcast)}")]
-        public virtual async Task TestStateHandlerAPIs_HandleBroadcast(ILogger logger, [StateServiceTrigger(URL = "TEST_STATE_HUB_URL")] StateEventArgs stateEvent, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
+        public virtual async Task TestStateHandlerAPIs_HandleBroadcast(ILogger logger, [StateServiceTrigger(URL = "TEST_STATE_HUB_URL")] StateEventArgs stateEvent, [StateService(URL = "TEST_STATE_HUB_URL")] TestStateActionsClient stateSvc)
         {
             var state = stateEvent.State;//.FromJSON<MetadataModel>();
 
@@ -57,7 +57,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         }
 
         [FunctionName($"{nameof(TestStateHandlerAPIs_SetTest)}")]
-        public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_SetTest(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = setTestStateRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
+        public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_SetTest(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = setTestStateRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestStateActionsClient stateSvc)
         {
             return await withAPIBoundary<SetTestRequest, BaseResponse>(req, async (request, response) =>
             {
@@ -71,7 +71,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
 
 
         [FunctionName($"{nameof(TestStateHandlerAPIs_AddGroup)}")]
-        public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_AddGroup(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = addGroupRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
+        public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_AddGroup(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = addGroupRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestStateActionsClient stateSvc)
         {
             return await withAPIBoundary<AddGroupRequest, BaseResponse>(req, async (request, response) =>
             {

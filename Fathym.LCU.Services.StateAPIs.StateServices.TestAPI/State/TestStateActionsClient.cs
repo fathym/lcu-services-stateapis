@@ -9,10 +9,10 @@ using Fathym.LCU.Services.StateAPIs.TestHub.State;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
 {
-    public class TestAPIStateService : StateService
+    public class TestStateActionsClient : StateActionsClient
     {
         #region Constructors
-        public TestAPIStateService(string url, HttpTransportType transport)
+        public TestStateActionsClient(string url, HttpTransportType transport)
             : base(url, transport)
         { }
         #endregion

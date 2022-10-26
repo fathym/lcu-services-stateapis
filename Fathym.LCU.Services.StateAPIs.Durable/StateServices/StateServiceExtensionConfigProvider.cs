@@ -12,17 +12,17 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
     public class StateServiceExtensionConfigProvider : IExtensionConfigProvider
     {
         #region Fields
-        protected readonly ConcurrentDictionary<string, IStateService> clientCache;
+        protected readonly ConcurrentDictionary<string, IStateActionsClient> clientCache;
 
-        protected readonly IStateServiceFactory serviceFactory;
+        protected readonly IStateActionsClientFactory serviceFactory;
         #endregion
 
         #region Constructors
-        public StateServiceExtensionConfigProvider(IStateServiceFactory serviceFactory)
+        public StateServiceExtensionConfigProvider(IStateActionsClientFactory serviceFactory)
         {
             this.serviceFactory = serviceFactory ?? throw new ArgumentNullException(nameof(serviceFactory));
 
-            clientCache = new ConcurrentDictionary<string, IStateService>();
+            clientCache = new ConcurrentDictionary<string, IStateActionsClient>();
         }
         #endregion
 
@@ -52,23 +52,23 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
         #endregion
 
         #region Helpers
-        protected virtual IStateService loadStateService(StateServiceTriggerAttribute attribute, Type type)
+        protected virtual IStateActionsClient loadStateService(StateServiceTriggerAttribute attribute, Type type)
         {
             return loadStateService(attribute.GetURL(), attribute.Transport, type);
         }
 
-        protected virtual IStateService loadStateService(StateServiceAttribute attribute, Type type)
+        protected virtual IStateActionsClient loadStateService(StateServiceAttribute attribute, Type type)
         {
             return loadStateService(attribute.GetURL(), attribute.Transport, type);
         }
 
-        protected virtual IStateService loadStateService(string url, HttpTransportType transport, Type type)
+        protected virtual IStateActionsClient loadStateService(string url, HttpTransportType transport, Type type)
         {
             var cacheKey = $"{url}";
 
             if (!clientCache.ContainsKey(cacheKey))
             {
-                clientCache[cacheKey] = serviceFactory.CreateStateService(url, transport, type);
+                clientCache[cacheKey] = serviceFactory.CreateStateActionsClient(url, transport, type);
             }
 
             return clientCache[cacheKey];

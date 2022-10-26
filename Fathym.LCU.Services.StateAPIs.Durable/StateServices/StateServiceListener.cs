@@ -42,7 +42,8 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
             {
                 var triggerData = new TriggeredFunctionData
                 {
-                    TriggerValue = stateEvent.State.ToJSON()
+                    TriggerValue = stateEvent
+                    //TriggerDetails = new 
                 };
 
                 var task = executor.TryExecuteAsync(triggerData, CancellationToken.None);

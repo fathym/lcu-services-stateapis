@@ -1,6 +1,6 @@
 ﻿using Fathym.API;
 
-namespace Fathym.LCU.Services.StateAPIs.Durable
+namespace Fathym.LCU.Services.StateAPIs.StateServices
 {
     public class StateRequest : BaseRequest
     {

@@ -6,7 +6,6 @@ using System;
 using System.Net.Http;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Fathym.API;
-using Fathym.LCU.Services.StateAPIs.Durable;
 using Fathym.LCU.Services.StateAPIs.TestHub.State;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
@@ -27,6 +26,8 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
 
         #region API Methods
         #region Routes
+        private const string addGroupRoute = "add-group";
+
         private const string attachStateRoute = "attach";
 
         private const string setTestStateRoute = "set-test";
@@ -48,11 +49,11 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         }
 
         [FunctionName($"{nameof(TestStateHandlerAPIs_HandleBroadcast)}")]
-        public virtual async Task TestStateHandlerAPIs_HandleBroadcast(ILogger logger, [StateServiceTrigger(URL = "TEST_STATE_HUB_URL")] string stateStr, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
+        public virtual async Task TestStateHandlerAPIs_HandleBroadcast(ILogger logger, [StateServiceTrigger(URL = "TEST_STATE_HUB_URL")] StateEventArgs stateEvent, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
         {
-            var state = stateStr.FromJSON<MetadataModel>();
+            var state = stateEvent.State;//.FromJSON<MetadataModel>();
 
-            logger.LogInformation(stateStr);
+            logger.LogInformation(state.ToJSON());
         }
 
         [FunctionName($"{nameof(TestStateHandlerAPIs_SetTest)}")]
@@ -61,6 +62,20 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
             return await withAPIBoundary<SetTestRequest, BaseResponse>(req, async (request, response) =>
             {
                 await stateSvc.SetTest(request);
+
+                response.Status = Status.Success;
+
+                return response;
+            }).Run();
+        }
+
+
+        [FunctionName($"{nameof(TestStateHandlerAPIs_AddGroup)}")]
+        public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_AddGroup(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = addGroupRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestAPIStateService stateSvc)
+        {
+            return await withAPIBoundary<AddGroupRequest, BaseResponse>(req, async (request, response) =>
+            {
+                await stateSvc.AddGroup(request);
 
                 response.Status = Status.Success;
 

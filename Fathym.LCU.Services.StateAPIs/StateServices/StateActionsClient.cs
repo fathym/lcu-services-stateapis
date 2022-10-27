@@ -64,6 +64,12 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
         #region API Methods
         public virtual async Task Start()
         {
+            //  TODO:  Where to get JWT
+            await Start(async () => Environment.GetEnvironmentVariable("TEMP_JWT"));
+        }
+
+        public virtual async Task Start(Func<Task<string>> accessTokenProvider)
+        {
             await DesignOutline.Instance.Retry()
                 .SetActionAsync(async () =>
                 {
@@ -71,7 +77,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
                     {
                         if (Hub == null)
                         {
-                            Hub = connect(URL, Transport);
+                            Hub = connect(URL, Transport, accessTokenProvider);
 
                             Hub.ServerTimeout = TimeSpan.FromMilliseconds(600000);
 
@@ -125,22 +131,21 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
         #endregion
 
         #region Helpers
-        protected virtual HubConnection connect(string url, HttpTransportType transport)
+        protected virtual HubConnection connect(string url, HttpTransportType transport, Func<Task<string>> accessTokenProvider)
         {
-            var bldr = createHubBuilder(url, transport);
+            var bldr = createHubBuilder(url, transport, accessTokenProvider);
 
             return bldr.Build();
         }
 
-        protected virtual IHubConnectionBuilder createHubBuilder(string url, HttpTransportType transport)
+        protected virtual IHubConnectionBuilder createHubBuilder(string url, HttpTransportType transport, Func<Task<string>> accessTokenProvider)
         {
             return new HubConnectionBuilder()
                 .WithUrl(new Uri(url), o =>
                 {
                     o.Transports = transport;
 
-                    //  TODO:  Where to get JWT
-                    o.AccessTokenProvider = async () => Environment.GetEnvironmentVariable("TEMP_JWT");
+                    o.AccessTokenProvider = accessTokenProvider;
                 })
                 .WithAutomaticReconnect();
         }

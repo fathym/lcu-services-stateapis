@@ -49,14 +49,27 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             await client.SignalEntityAsync(entityId, action);
         }
 
-        public static async Task TerminateWithCheckAsync(this IDurableOrchestrationClient orchClient, string instanceId, string reason, int terminateTimeoutSeconds = 0)
+        public static async Task<bool> TerminateWithCheckAsync(this IDurableOrchestrationClient orchClient, string instanceId, string reason, int terminateTimeoutSeconds = 0)
         {
-            var instanceStatus = await orchClient.GetStatusAsync(instanceId);
+            var currentStatus = await orchClient.GetStatusAsync(instanceId);
 
             var timeout = DateTime.UtcNow.AddSeconds(terminateTimeoutSeconds);
 
-            if (instanceStatus.IsRunning() && instanceStatus.LastUpdatedTime < timeout)
+            if (currentStatus.IsRunning() && currentStatus.LastUpdatedTime < timeout)
+            {
                 await orchClient.TerminateAsync(instanceId, reason);
+
+                while (currentStatus.IsRunning())
+                {
+                    currentStatus = await orchClient.GetStatusAsync(instanceId);
+
+                    await Task.Delay(100);
+                }
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

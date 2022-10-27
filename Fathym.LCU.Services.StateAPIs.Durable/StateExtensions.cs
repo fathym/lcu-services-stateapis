@@ -1,5 +1,8 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+﻿using Fathym.LCU.Services.StateAPIs.StateServices;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.Durable
@@ -13,6 +16,21 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             var entityProxy = context.CreateEntityProxy<TActions>(entityId);
 
             return entityProxy;
+        }
+
+        public static bool IsRunning(this DurableOrchestrationStatus status)
+        {
+            return status != null &&
+                status.RuntimeStatus != OrchestrationRuntimeStatus.Completed &&
+                status.RuntimeStatus != OrchestrationRuntimeStatus.Failed &&
+                status.RuntimeStatus != OrchestrationRuntimeStatus.Canceled &&
+                status.RuntimeStatus != OrchestrationRuntimeStatus.Terminated;
+        }
+
+        public static TStateActionsClient LoadClient<TStateActionsClient>(this IEnumerable<IStateActionsClient> stateActions)
+            where TStateActionsClient : class, IStateActionsClient
+        {
+            return (TStateActionsClient)stateActions.FirstOrDefault(sa => sa is TStateActionsClient);
         }
 
         public static async Task<TEntityStore> LoadEntityFromStore<TEntityStore>(this IDurableEntityClient client, string id)
@@ -29,15 +47,6 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             var entityId = new EntityId(typeof(TEntityStore).Name, id);
 
             await client.SignalEntityAsync(entityId, action);
-        }
-
-        public static bool IsRunning(this DurableOrchestrationStatus status)
-        {
-            return status != null &&
-                status.RuntimeStatus != OrchestrationRuntimeStatus.Completed &&
-                status.RuntimeStatus != OrchestrationRuntimeStatus.Failed &&
-                status.RuntimeStatus != OrchestrationRuntimeStatus.Canceled &&
-                status.RuntimeStatus != OrchestrationRuntimeStatus.Terminated;
         }
 
         public static async Task TerminateWithCheckAsync(this IDurableOrchestrationClient orchClient, string instanceId, string reason, int terminateTimeoutSeconds = 0)

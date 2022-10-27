@@ -74,7 +74,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             {
                 var currentStatus = await orchClient.GetStatusAsync(instanceId);
 
-                var terminated = await orchClient.TerminateWithCheckAsync(instanceId, "Timeout", terminateTimeoutSeconds: terminateTimeoutSeconds);
+                var terminated = await orchClient.TerminateWithCheckAsync(instanceId, "Terminated", terminateTimeoutSeconds: terminateTimeoutSeconds);
 
                 if (terminated)
                     instanceId = await orchClient.StartNewAsync(orchestrationFunctionName, instanceId: instanceId, input);

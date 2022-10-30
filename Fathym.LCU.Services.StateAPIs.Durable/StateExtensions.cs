@@ -57,10 +57,10 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
             if (currentStatus.IsRunning() && currentStatus.LastUpdatedTime < timeout)
             {
-                await orchClient.TerminateAsync(instanceId, reason);
-
                 while (currentStatus.IsRunning())
                 {
+                    await orchClient.TerminateAsync(instanceId, reason);
+
                     currentStatus = await orchClient.GetStatusAsync(instanceId);
 
                     await Task.Delay(100);

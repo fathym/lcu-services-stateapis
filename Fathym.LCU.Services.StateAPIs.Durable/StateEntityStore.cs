@@ -28,7 +28,14 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             }
         }
 
+        protected string[] keyParts
+        {
+            get { return context.EntityKey.Split(splitKey); }
+        }
+
         protected readonly ILogger logger;
+
+        protected char splitKey;
         #endregion
 
         #region Properties
@@ -39,6 +46,8 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         public StateEntityStore(ILogger logger)
         {
             this.logger = logger;
+
+            splitKey = '|';
         }
         #endregion
         

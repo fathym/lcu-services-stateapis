@@ -77,7 +77,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
                     {
                         if (Hub == null)
                         {
-                            Hub = connect(URL, Transport, accessTokenProvider);
+                            Hub = connect(accessTokenProvider);
 
                             Hub.ServerTimeout = TimeSpan.FromMilliseconds(600000);
 
@@ -131,19 +131,19 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
         #endregion
 
         #region Helpers
-        protected virtual HubConnection connect(string url, HttpTransportType transport, Func<Task<string>> accessTokenProvider)
+        protected virtual HubConnection connect(Func<Task<string>> accessTokenProvider)
         {
-            var bldr = createHubBuilder(url, transport, accessTokenProvider);
+            var bldr = createHubBuilder(accessTokenProvider);
 
             return bldr.Build();
         }
 
-        protected virtual IHubConnectionBuilder createHubBuilder(string url, HttpTransportType transport, Func<Task<string>> accessTokenProvider)
+        protected virtual IHubConnectionBuilder createHubBuilder(Func<Task<string>> accessTokenProvider)
         {
             return new HubConnectionBuilder()
-                .WithUrl(new Uri(url), o =>
+                .WithUrl(new Uri(URL), o =>
                 {
-                    o.Transports = transport;
+                    o.Transports = Transport;
 
                     o.AccessTokenProvider = accessTokenProvider;
                 })

@@ -35,14 +35,19 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         #region Helpers
         protected abstract string buildLoadAndUpdateActivityName();
 
-        protected virtual async Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context)
+        protected virtual Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context)
+        {
+            return callLoadAndUpdateStateActivity<TEntityStore>(context, context.InstanceId);
+        }
+
+        protected virtual async Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context, string instanceId)
         {
             var loadAndUpdateActivityName = buildLoadAndUpdateActivityName();
 
             await context.CallActivityAsync(loadAndUpdateActivityName, new StateRequest()
             {
                 StateType = typeof(TEntityStore).Name,
-                StateKey = context.InstanceId
+                StateKey = instanceId
             });
         }
 

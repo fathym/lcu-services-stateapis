@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -120,13 +121,24 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             //  TODO:  unmap connection to user
         }
 
+        protected virtual string loadEntLookup(InvocationContext invocationContext)
+        {
+            var entLookup = invocationContext.Claims["lcu-ent-lookup"];
+
+            if (entLookup.IsNullOrEmpty())
+                throw new ArgumentNullException(nameof(entLookup));
+
+            return entLookup;
+        }
+
         protected virtual async Task<SignalRConnectionInfo> negotiate(ILogger logger, HttpRequestMessage req)
         {
             var authorization = req.Headers.GetValues("Authorization").FirstOrDefault();
 
             var claims = GetClaims(authorization);
 
-            //claims.Add(new Claim("lcu-state-key", req.Headers.GetValues("lcu-state-key").FirstOrDefault()));
+            if (req.Headers.Contains("lcu-ent-lookup"))
+                claims.Add(new Claim("lcu-ent-lookup", req.Headers.GetValues("lcu-ent-lookup").FirstOrDefault()));
 
             return await NegotiateAsync(new NegotiationOptions
             {

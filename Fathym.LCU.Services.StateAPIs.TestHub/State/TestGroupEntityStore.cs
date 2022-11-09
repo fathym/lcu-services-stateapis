@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 {
-    public interface ITestGroupEntityStoreActions
+    public interface ITestGroupEntityStoreActions : IStateEntityStore
     {
         Task AddGroup(string group);
     }
@@ -30,9 +30,9 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 
         #region API Methods
         [FunctionName(nameof(TestGroupEntityStore))]
-        public async Task TestGroupEntityStore_Run([EntityTrigger] IDurableEntityContext ctx)
+        public async Task TestGroupEntityStore_Run([EntityTrigger] IDurableEntityContext ctx, [SignalR(HubName = nameof(TestStateActions))] IAsyncCollector<SignalRMessage> messages)
         {
-            await initializeStateEntity(ctx);
+            await executeStateEntityLifeCycle(ctx, messages);
         }
 
         #region Entity Actions

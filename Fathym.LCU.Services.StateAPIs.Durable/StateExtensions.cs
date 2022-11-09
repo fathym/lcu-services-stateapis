@@ -39,6 +39,9 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
             var state = await client.ReadEntityStateAsync<TEntityStore>(entityId);
 
+            if (state.EntityState == null)
+                await client.SignalEntityAsync<IStateEntityStore>(entityId, store => store._Load());
+
             return state.EntityState;
         }
 
@@ -59,17 +62,22 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             {
                 while (currentStatus.IsRunning())
                 {
-                    await orchClient.TerminateAsync(instanceId, reason);
+                    //if (currentStatus.RuntimeStatus != OrchestrationRuntimeStatus.Pending)
+                    {
+                        await orchClient.TerminateAsync(instanceId, reason);
+
+                        await Task.Delay(500);
+                    }
+                    //else
+                    //    await Task.Delay(500);
 
                     currentStatus = await orchClient.GetStatusAsync(instanceId);
-
-                    await Task.Delay(100);
                 }
 
                 return true;
             }
 
-            return false;
+            return !currentStatus.IsRunning();
         }
     }
 }

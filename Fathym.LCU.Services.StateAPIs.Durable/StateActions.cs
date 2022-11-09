@@ -45,11 +45,11 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         {
             var loadAndUpdateActivityName = buildLoadAndUpdateActivityName();
 
-            await context.CallActivityAsync(loadAndUpdateActivityName, new StateRequest()
-            {
-                StateType = typeof(TEntityStore).Name,
-                StateKey = instanceId
-            });
+            //await context.CallActivityAsync(loadAndUpdateActivityName, new StateRequest()
+            //{
+            //    StateType = typeof(TEntityStore).Name,
+            //    StateKey = instanceId
+            //});
         }
 
         protected virtual async Task<TEntityStore> loadAndUpdateState<TEntityStore>(ILogger logger, IDurableEntityClient client, string stateKey)
@@ -58,16 +58,19 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
             var state = await client.LoadEntityFromStore<TEntityStore>(stateKey);
 
-            var stateType = typeof(TEntityStore).Name;
-
-            var stateLookup = $"{stateType}|{stateKey}";
-
-            await Clients.Groups(stateLookup).SendAsync(stateLookup, new StateUpdateRequest<TEntityStore>()
+            if (state != null)
             {
-                StateType = stateType,
-                StateKey = stateKey,
-                State = state
-            }.ToJToken());
+                var stateType = typeof(TEntityStore).Name;
+
+                var stateLookup = $"{stateType}|{stateKey}";
+
+                await Clients.Groups(stateLookup).SendAsync(stateLookup, new StateUpdateRequest<TEntityStore>()
+                {
+                    StateType = stateType,
+                    StateKey = stateKey,
+                    State = state
+                }.ToJToken());
+            }
 
             return state;
         }

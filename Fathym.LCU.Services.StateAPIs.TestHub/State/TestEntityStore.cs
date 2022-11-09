@@ -1,20 +1,26 @@
 ﻿using Fathym.LCU.Services.StateAPIs.Durable;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Azure.SignalR.Management;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 {
-    public interface ITestEntityStoreActions
+    public interface ITestEntityStoreActions : IStateEntityStore
     {
         Task SetTest(string test);
     }
 
     public class TestEntityStore : StateEntityStore<TestEntityStore>, ITestEntityStoreActions
     {
+        #region Fields
+        #endregion
+
         #region Properties
         public virtual string Test { get; set; }
         #endregion
@@ -29,9 +35,9 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 
         #region API Methods
         [FunctionName(nameof(TestEntityStore))]
-        public async Task TestEntityStore_Run([EntityTrigger] IDurableEntityContext ctx)
+        public async Task TestEntityStore_Run([EntityTrigger] IDurableEntityContext ctx, [SignalR(HubName = nameof(TestStateActions))] IAsyncCollector<SignalRMessage> messages)
         {
-            await initializeStateEntity(ctx);
+            await executeStateEntityLifeCycle(ctx, messages);
         }
 
         #region Entity Actions

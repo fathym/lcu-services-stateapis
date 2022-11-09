@@ -1,6 +1,7 @@
 ﻿using Fathym;
 using Fathym.API;
 using Fathym.API.Fluent;
+using Fathym.LCU.Services.StateAPIs.StateServices;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.SignalR.Management;
 using Microsoft.Azure.WebJobs;
@@ -16,8 +17,15 @@ using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.Durable
 {
-    public abstract class StateEntityStore<TStateEntity>
-        where TStateEntity : class
+    public interface IStateEntityStore
+    {
+        Task _Load();
+
+        Task _Reset();
+    }
+
+    public abstract class StateEntityStore<TEntityStore> : IStateEntityStore
+        where TEntityStore : class
     {
         #region Fields
         protected virtual IDurableEntityContext context
@@ -50,14 +58,14 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             splitKey = '|';
         }
         #endregion
-        
-        #region Life Cycle
-        protected virtual async Task initializeStateEntity(IDurableEntityContext ctx)
-        {
-            if (!ctx.HasState)
-                await handleStateEmpty(ctx);
 
-            await ctx.DispatchAsync<TStateEntity>();
+        #region Life Cycle
+        public virtual async Task _Load()
+        { }
+
+        public virtual async Task _Reset()
+        {
+            context.DeleteState();
         }
         #endregion
 
@@ -69,23 +77,61 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         #endregion
 
         #region Helpers
-        protected virtual async Task handleStateEmpty(IDurableEntityContext ctx)
+        protected virtual async Task afterDispatchStore(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> messages)
+        {
+            await loadAndUpdateState(ctx, messages);
+        }
+
+        protected virtual async Task beforeDispatchStore(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> messages)
+        { }
+
+        protected virtual async Task executeStateEntityLifeCycle(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> messages)
+        {
+            if (!ctx.HasState)
+                await handleStateEmpty(ctx, messages);
+
+            await beforeDispatchStore(ctx, messages);
+
+            await ctx.DispatchAsync<TEntityStore>();
+
+            await afterDispatchStore(ctx, messages);
+        }
+
+        protected virtual async Task handleStateEmpty(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> messages)
         {
             ctx.SetState(loadInitialState());
+
+            await loadAndUpdateState(ctx, messages);
         }
 
-        protected abstract TStateEntity loadInitialState();
-
-        protected virtual T newtonsoftConvert<T>(T obj)
+        protected virtual async Task loadAndUpdateState(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> messages)
         {
-            //  This is a little hack to handle the issue with Durable Entities not using System.Text.Json and JsonElement
-            //      not serializing correctly inside newtonsoft.
-            var objStr = obj.ToJSON();
+            var stateKey = ctx.EntityKey;
 
-            obj = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(objStr);
+            logger.LogDebug($"Loading and updating state: {stateKey}");
 
-            return obj;
+            var state = ctx.GetState<TEntityStore>();
+
+            var stateType = typeof(TEntityStore).Name;
+
+            var stateLookup = $"{stateType}|{stateKey}";
+
+            await messages.AddAsync(new SignalRMessage()
+            {
+                GroupName = stateLookup,
+                Target = stateLookup,
+                Arguments = new[] {
+                    new StateUpdateRequest<TEntityStore>()
+                    {
+                        StateType = stateType,
+                        StateKey = stateKey,
+                        State = state
+                    }.ToJToken()
+                }
+            });
         }
+
+        protected abstract TEntityStore loadInitialState();
         #endregion
     }
 }

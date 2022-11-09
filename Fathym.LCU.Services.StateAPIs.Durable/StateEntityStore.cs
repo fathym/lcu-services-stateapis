@@ -85,10 +85,10 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         protected virtual async Task beforeDispatchStore(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> messages)
         { }
 
-        protected virtual async Task executeStateEntityLifeCycle(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> messages)
+        protected virtual async Task executeStateEntityLifeCycle(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> messages, Func<Task<TEntityStore>> loadInitialState)
         {
             if (!ctx.HasState)
-                await handleStateEmpty(ctx, messages);
+                await handleStateEmpty(ctx, messages, loadInitialState);
 
             await beforeDispatchStore(ctx, messages);
 
@@ -97,9 +97,9 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             await afterDispatchStore(ctx, messages);
         }
 
-        protected virtual async Task handleStateEmpty(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> messages)
+        protected virtual async Task handleStateEmpty(IDurableEntityContext ctx, IAsyncCollector<SignalRMessage> messages, Func<Task<TEntityStore>> loadInitialState)
         {
-            ctx.SetState(loadInitialState());
+            ctx.SetState(await loadInitialState());
 
             await loadAndUpdateState(ctx, messages);
         }
@@ -130,8 +130,6 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
                 }
             });
         }
-
-        protected abstract TEntityStore loadInitialState();
         #endregion
     }
 }

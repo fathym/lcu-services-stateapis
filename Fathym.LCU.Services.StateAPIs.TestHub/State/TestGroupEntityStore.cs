@@ -32,7 +32,7 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
         [FunctionName(nameof(TestGroupEntityStore))]
         public async Task TestGroupEntityStore_Run([EntityTrigger] IDurableEntityContext ctx, [SignalR(HubName = nameof(TestStateActions))] IAsyncCollector<SignalRMessage> messages)
         {
-            await executeStateEntityLifeCycle(ctx, messages);
+            await executeStateEntityLifeCycle(ctx, messages, loadInitialState);
         }
 
         #region Entity Actions
@@ -44,7 +44,7 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
         #endregion
 
         #region Helpers
-        protected override TestGroupEntityStore loadInitialState()
+        protected virtual async Task<TestGroupEntityStore> loadInitialState()
         {
             return new TestGroupEntityStore();
         }

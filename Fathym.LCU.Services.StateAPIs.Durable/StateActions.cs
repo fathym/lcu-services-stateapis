@@ -34,23 +34,23 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         #endregion
 
         #region Helpers
-        protected abstract string buildLoadAndUpdateActivityName();
+        //protected abstract string buildLoadAndUpdateActivityName();
 
-        protected virtual Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context)
-        {
-            return callLoadAndUpdateStateActivity<TEntityStore>(context, context.InstanceId);
-        }
+        //protected virtual Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context)
+        //{
+        //    return callLoadAndUpdateStateActivity<TEntityStore>(context, context.InstanceId);
+        //}
 
-        protected virtual async Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context, string instanceId)
-        {
-            var loadAndUpdateActivityName = buildLoadAndUpdateActivityName();
+        //protected virtual async Task callLoadAndUpdateStateActivity<TEntityStore>(IDurableOrchestrationContext context, string instanceId)
+        //{
+        //    var loadAndUpdateActivityName = buildLoadAndUpdateActivityName();
 
-            //await context.CallActivityAsync(loadAndUpdateActivityName, new StateRequest()
-            //{
-            //    StateType = typeof(TEntityStore).Name,
-            //    StateKey = instanceId
-            //});
-        }
+        //    //await context.CallActivityAsync(loadAndUpdateActivityName, new StateRequest()
+        //    //{
+        //    //    StateType = typeof(TEntityStore).Name,
+        //    //    StateKey = instanceId
+        //    //});
+        //}
 
         protected virtual async Task<TEntityStore> loadAndUpdateState<TEntityStore>(ILogger logger, IDurableEntityClient client, string stateKey)
         {

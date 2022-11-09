@@ -129,8 +129,6 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
             var store = context.CreateEntityProxy<TestGroupEntityStore, ITestGroupEntityStoreActions>();
 
             await store.AddGroup(group);
-
-            await callLoadAndUpdateStateActivity<TestGroupEntityStore>(context);
         }
         #endregion
 
@@ -143,29 +141,15 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
             var store = context.CreateEntityProxy<ITestEntityStoreActions>(new EntityId(typeof(TestEntityStore).Name, context.InstanceId));
 
             await store.SetTest(test);
-
-            await callLoadAndUpdateStateActivity<TestEntityStore>(context);
         }
         #endregion
 
         #region Activity Helpers
-        [FunctionName(nameof(Activity_LoadAndUpdateState))]
-        public virtual async Task Activity_LoadAndUpdateState(ILogger logger, [DurableClient] IDurableEntityClient client, [ActivityTrigger] StateRequest request)
-        {
-            if (request.StateType == "TestEntityStore")
-                await loadAndUpdateState<TestEntityStore>(logger, client, request.StateKey);
-            else if (request.StateType == "TestGroupEntityStore")
-                await loadAndUpdateState<TestGroupEntityStore>(logger, client, request.StateKey);
-        }
         #endregion
         #endregion
         #endregion
 
         #region Helpers
-        protected override string buildLoadAndUpdateActivityName()
-        {
-            return nameof(Activity_LoadAndUpdateState);
-        }
         #endregion
     }
 }

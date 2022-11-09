@@ -17,14 +17,14 @@ using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.Durable
 {
-    public interface IStateEntityStore
+    public interface IStateEntityStoreActions
     {
         Task _Load();
 
         Task _Reset();
     }
 
-    public abstract class StateEntityStore<TEntityStore> : IStateEntityStore
+    public abstract class StateEntityStore<TEntityStore> : IStateEntityStoreActions
         where TEntityStore : class
     {
         #region Fields

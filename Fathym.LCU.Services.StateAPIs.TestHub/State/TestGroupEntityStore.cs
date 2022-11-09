@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 {
-    public interface ITestGroupEntityStoreActions : IStateEntityStore
+    public interface ITestGroupEntityStoreActions : IStateEntityStoreActions
     {
         Task AddGroup(string group);
     }

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.TestHub.State
 {
-    public interface ITestEntityStoreActions : IStateEntityStore
+    public interface ITestEntityStoreActions : IStateEntityStoreActions
     {
         Task SetTest(string test);
     }

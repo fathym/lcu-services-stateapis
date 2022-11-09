@@ -40,7 +40,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             var state = await client.ReadEntityStateAsync<TEntityStore>(entityId);
 
             if (state.EntityState == null)
-                await client.SignalEntityAsync<IStateEntityStore>(entityId, store => store._Load());
+                await client.SignalEntityAsync<IStateEntityStoreActions>(entityId, store => store._Load());
 
             return state.EntityState;
         }

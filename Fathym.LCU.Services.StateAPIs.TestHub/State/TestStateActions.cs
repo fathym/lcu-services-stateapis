@@ -115,7 +115,8 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
                 response.Status = response.Model != null ? Status.Success : Status.NotLocated;
 
                 return response;
-            }).Run();
+            })
+                .Run();
         }
         #endregion
 

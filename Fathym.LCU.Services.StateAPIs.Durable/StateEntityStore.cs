@@ -130,6 +130,23 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
                 }
             });
         }
+
+        protected virtual async Task<string> startOrchestration<T>(string orchestrationFunctionName, string instanceId = null, T input = default(T), int terminateTimeoutSeconds = 0)
+        {
+            logger.LogInformation($"Starting orchestration with id {instanceId}");
+
+            if (!instanceId.IsNullOrEmpty())
+            {
+                //var terminated = await context.TerminateWithCheckAsync(instanceId, "Terminated", terminateTimeoutSeconds: terminateTimeoutSeconds);
+
+                //if (terminated)
+                instanceId = context.StartNewOrchestration(orchestrationFunctionName, input, instanceId: instanceId);
+            }
+            else
+                instanceId = context.StartNewOrchestration(orchestrationFunctionName, input, instanceId: null);
+
+            return instanceId;
+        }
         #endregion
     }
 }

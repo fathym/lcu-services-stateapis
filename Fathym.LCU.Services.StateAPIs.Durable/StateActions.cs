@@ -159,8 +159,6 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             var stateLookup = $"{stateType}|{stateKey}";
 
             await Groups.RemoveFromGroupAsync(invocationContext.ConnectionId, stateLookup);
-
-            await loadAndUpdateState<TEntityStore>(logger, client, stateKey);
         }
         #endregion
 

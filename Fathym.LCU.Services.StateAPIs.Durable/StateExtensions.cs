@@ -64,7 +64,11 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
                 {
                     //if (currentStatus.RuntimeStatus != OrchestrationRuntimeStatus.Pending)
                     {
-                        await orchClient.TerminateAsync(instanceId, reason);
+                        try
+                        {
+                            await orchClient.TerminateAsync(instanceId, reason);
+                        }
+                        catch { }
 
                         await Task.Delay(500);
                     }

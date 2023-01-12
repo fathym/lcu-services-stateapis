@@ -54,6 +54,6 @@
 		<PackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="6.0.12" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.12" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.5.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.1" />
 	</ItemGroup>
 </Project>

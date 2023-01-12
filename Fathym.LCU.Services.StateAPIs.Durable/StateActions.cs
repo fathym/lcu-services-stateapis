@@ -9,6 +9,8 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -179,29 +181,26 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
                 var token = handler.ReadToken(accessToken) as JwtSecurityToken;
 
+                var iss = token.Issuer;
+
+                var tfp = token.Payload["tfp"].ToString(); // Sign-in policy name
+
+                var metadataEndpoint = $"{iss}.well-known/openid-configuration?p={tfp}";
+
+                var cm = new ConfigurationManager<OpenIdConnectConfiguration>(metadataEndpoint,
+                    new OpenIdConnectConfigurationRetriever(),
+                    new HttpDocumentRetriever());
+
+                var discoveryDocument = await cm.GetConfigurationAsync();
+
+                var signingKeys = discoveryDocument.SigningKeys;
+
                 var validationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new RsaSecurityKey(RSA.Create()),
-                    //IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey))
+                    IssuerSigningKeys = signingKeys,
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    SignatureValidator = (string token, TokenValidationParameters parameters) =>
-                    {
-                        var crypto = (parameters.IssuerSigningKey as RsaSecurityKey).Rsa;
-
-                        var xml = secretKey;
-                        
-                        crypto.FromXmlString(xml);
-                        
-                        var rsa = new RSACryptoServiceProvider();
-                        
-                        var key = new RsaSecurityKey(rsa);
-                        
-                        parameters.IssuerSigningKey = key;
-                        
-                        return key.CryptoProviderFactory.CreateForVerifying(key, "RS256");
-                    }
                 };
 
                 var claims = handler.ValidateToken(accessToken, validationParameters, out SecurityToken validatedToken);

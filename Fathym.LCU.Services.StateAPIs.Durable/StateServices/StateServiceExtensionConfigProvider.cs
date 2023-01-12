@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices
 {
@@ -33,7 +34,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
 
             inputRule.BindToValueProvider(async (attribute, type) =>
             {
-                var client = loadStateService(attribute, type);
+                var client = loadStateService(attribute, async () => Environment.GetEnvironmentVariable("TEMP_JWT"), type);
 
                 return new StateServiceValueBinder(client);
             });
@@ -43,32 +44,32 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
             triggerRule.BindToTrigger(new StateServiceTriggerBindingProvider(this));
         }
 
-        public StateServiceTriggerContext CreateContext(StateServiceTriggerAttribute attribute)
+        public StateServiceTriggerContext CreateContext(StateServiceTriggerAttribute attribute, Func<Task<string>> accessTokenProvider)
         {
             //var clientType = !attribute.ClientType.IsNullOrEmpty() ? Type.GetType(attribute.ClientType) : null;
 
-            return new StateServiceTriggerContext(attribute, loadStateService(attribute, null));//, clientType));
+            return new StateServiceTriggerContext(attribute, loadStateService(attribute, accessTokenProvider, null));//, clientType));
         }
         #endregion
 
         #region Helpers
-        protected virtual IStateActionsClient loadStateService(StateServiceTriggerAttribute attribute, Type type)
+        protected virtual IStateActionsClient loadStateService(StateServiceTriggerAttribute attribute, Func<Task<string>> accessTokenProvider, Type type)
         {
-            return loadStateService(attribute.GetURL(), attribute.Transport, type);
+            return loadStateService(attribute.GetURL(), attribute.Transport, accessTokenProvider, type);
         }
 
-        protected virtual IStateActionsClient loadStateService(StateServiceAttribute attribute, Type type)
+        protected virtual IStateActionsClient loadStateService(StateServiceAttribute attribute, Func<Task<string>> accessTokenProvider, Type type)
         {
-            return loadStateService(attribute.GetURL(), attribute.Transport, type);
+            return loadStateService(attribute.GetURL(), attribute.Transport, accessTokenProvider, type);
         }
 
-        protected virtual IStateActionsClient loadStateService(string url, HttpTransportType transport, Type type)
+        protected virtual IStateActionsClient loadStateService(string url, HttpTransportType transport, Func<Task<string>> accessTokenProvider, Type type)
         {
             var cacheKey = $"{url}";
 
             if (!clientCache.ContainsKey(cacheKey))
             {
-                clientCache[cacheKey] = serviceFactory.CreateStateActionsClient(url, transport, type);
+                clientCache[cacheKey] = serviceFactory.CreateStateActionsClient(url, transport, accessTokenProvider, type);
             }
 
             return clientCache[cacheKey];

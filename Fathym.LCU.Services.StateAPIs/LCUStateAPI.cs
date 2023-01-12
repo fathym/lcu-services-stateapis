@@ -139,8 +139,7 @@ namespace Fathym.LCU.Services.StateAPIs
             });
         }
 
-        protected virtual IAPIBoundaried<HttpResponseMessage> withAPIBoundary<TRequest, TResponse>(HttpRequestMessage req, string secretKey,
-            Func<TRequest, TResponse, JwtSecurityToken, Task<TResponse>> action)
+        protected virtual IAPIBoundaried<HttpResponseMessage> withAPIBoundary<TRequest, TResponse>(HttpRequestMessage req, string secretKey, Func<TRequest, TResponse, JwtSecurityToken, Task<TResponse>> action)
                 where TRequest : class, new()
                 where TResponse : BaseResponse, new()
         {

@@ -19,7 +19,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
 
         string URL { get; }
 
-        Task Start();
+        Task Start(Func<Task<string>> accessTokenProvider);
 
         Task Stop();
 
@@ -62,12 +62,6 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
         #endregion
 
         #region API Methods
-        public virtual async Task Start()
-        {
-            //  TODO:  Where to get JWT
-            await Start(async () => Environment.GetEnvironmentVariable("TEMP_JWT"));
-        }
-
         public virtual async Task Start(Func<Task<string>> accessTokenProvider)
         {
             await DesignOutline.Instance.Retry()

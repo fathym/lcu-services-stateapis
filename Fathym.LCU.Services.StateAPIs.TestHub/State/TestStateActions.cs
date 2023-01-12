@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -117,6 +118,26 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
                 return response;
             })
                 .Run();
+        }
+
+        [FunctionName($"ListEnterprises")]
+        public virtual async Task<HttpResponseMessage> ListEnterprises(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "get", Route = "user/enterprises")] HttpRequestMessage req, [DurableClient] IDurableEntityClient client)
+        {
+            return await withSecureAPIBoundary(logger, req, async (response, token) =>
+            {
+                response.Model = new Dictionary<string, MetadataModel>()
+                {
+                    { "Test-1", new { Hello = "World" }.JSONConvert<MetadataModel>() }
+                }.JSONConvert<MetadataModel>();
+
+                response.Status = response.Model != null ? Status.Success : Status.NotLocated;
+
+                return response;
+            }, async () => new BaseResponse<MetadataModel>()
+            {
+                Status = Status.GeneralError
+            })
+            .Run();
         }
         #endregion
 

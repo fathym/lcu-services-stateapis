@@ -26,7 +26,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
             //if (parameter.ParameterType != typeof(string))
             //throw new InvalidOperationException("Invalid parameter type");
 
-            var triggerBinding = new StateServiceTriggerBinding(provider.CreateContext(attribute));
+            var triggerBinding = new StateServiceTriggerBinding(provider.CreateContext(attribute, async () => Environment.GetEnvironmentVariable("TEMP_JWT")));
 
             return Task.FromResult<ITriggerBinding>(triggerBinding);
         }

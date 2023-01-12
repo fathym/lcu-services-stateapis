@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices
 {
@@ -19,8 +20,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
         }
         #endregion
 
-        public IStateActionsClient CreateStateActionsClient(string url, HttpTransportType transport,
-            Type type = null)
+        public IStateActionsClient CreateStateActionsClient(string url, HttpTransportType transport, Func<Task<string>> accessTokenProvider, Type type = null)
         {
             var client = stateSvcs.FirstOrDefault(ss => ss.URL == url);
 
@@ -30,7 +30,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
             if (client == null)
                 client = new StateActionsClient(url, transport);
 
-            client.Start().Wait();
+            client.Start(accessTokenProvider).Wait();
 
             return client;
         }

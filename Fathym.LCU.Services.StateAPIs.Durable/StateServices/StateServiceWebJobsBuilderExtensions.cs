@@ -13,7 +13,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
 
             builder.AddExtension<StateServiceExtensionConfigProvider>();
 
-            builder.Services.AddSingleton<IStateServiceFactory, StateServiceFactory>();
+            builder.Services.AddSingleton<IStateActionsClientFactory, StateActionsClientFactory>();
 
             return builder;
         }

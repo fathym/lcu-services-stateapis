@@ -5,11 +5,11 @@
         #region Properties
         public virtual StateServiceTriggerAttribute TriggerAttribute { get; set; }
 
-        public virtual IStateService State { get; set; }
+        public virtual IStateActionsClient State { get; set; }
         #endregion
 
         #region Constructors
-        public StateServiceTriggerContext(StateServiceTriggerAttribute attribute, IStateService state)
+        public StateServiceTriggerContext(StateServiceTriggerAttribute attribute, IStateActionsClient state)
         {
             State = state;
 

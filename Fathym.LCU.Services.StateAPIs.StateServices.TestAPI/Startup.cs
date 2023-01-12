@@ -22,11 +22,11 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI
 
             builder.Services.AddHttpContextAccessor();
 
-            builder.Services.AddSingleton<IStateService, TestAPIStateService>(svcProvider =>
+            builder.Services.AddSingleton<IStateActionsClient, TestStateActionsClient>(svcProvider =>
             {
                 var url = Environment.GetEnvironmentVariable("TEST_STATE_HUB_URL");
 
-                return new TestAPIStateService(url, HttpTransportType.WebSockets);
+                return new TestStateActionsClient(url, HttpTransportType.WebSockets);
             });
         }
     }

@@ -182,8 +182,8 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
                 var validationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new RsaSecurityKey(RSA.Create()),
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey))
+                    //IssuerSigningKey = new RsaSecurityKey(RSA.Create()),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     //SignatureValidator = (string token, TokenValidationParameters parameters) =>

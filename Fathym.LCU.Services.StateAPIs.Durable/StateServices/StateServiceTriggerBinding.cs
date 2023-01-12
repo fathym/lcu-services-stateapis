@@ -17,7 +17,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
             this.context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public Type TriggerValueType => typeof(string);
+        public Type TriggerValueType => typeof(StateEventArgs);
 
         public IReadOnlyDictionary<string, Type> BindingDataContract => new Dictionary<string, Type>();
 

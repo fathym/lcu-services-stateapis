@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Fathym.LCU.Services.StateAPIs.StateServices
 {
-    public interface IStateService
+    public interface IStateActionsClient
     {
         event EventHandler<HubConnectionStartedEventArgs> Started;
 
@@ -18,18 +19,20 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
 
         string URL { get; }
 
-        Task Start();
+        Task Start(Func<Task<string>> accessTokenProvider);
 
         Task Stop();
 
-        Task AttachState(string stateKey);
+        Task AttachState(string stateType, string stateKey);
 
-        Task UnattachState(string stateKey);
+        Task UnattachState(string stateType, string stateKey);
     }
 
-    public class StateService : IStateService
+    public class StateActionsClient : IStateActionsClient
     {
         #region Fields
+        protected readonly Dictionary<string, HashSet<string>> attachedStates;
+
         protected int retryCount;
         #endregion
 
@@ -46,18 +49,20 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
         #endregion
 
         #region Constructors
-        public StateService(string url, HttpTransportType transport)
+        public StateActionsClient(string url, HttpTransportType transport)
         {
+            attachedStates = new Dictionary<string, HashSet<string>>();
+
+            retryCount = 0;
+
             Transport = transport;
 
             URL = url ?? throw new ArgumentNullException(nameof(url));
-
-            retryCount = 0;
         }
         #endregion
 
         #region API Methods
-        public virtual async Task Start()
+        public virtual async Task Start(Func<Task<string>> accessTokenProvider)
         {
             await DesignOutline.Instance.Retry()
                 .SetActionAsync(async () =>
@@ -66,13 +71,13 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
                     {
                         if (Hub == null)
                         {
-                            Hub = connect(URL, Transport);
+                            Hub = connect(accessTokenProvider);
 
                             Hub.ServerTimeout = TimeSpan.FromMilliseconds(600000);
 
                             Hub.Closed += onClosed;
 
-                            registerStartHandlers();
+                            registerStateHandlers();
                         }
 
                         await Hub.StartAsync();
@@ -86,6 +91,8 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
                     }
                     catch (Exception ex)
                     {
+                        Hub = null;
+
                         await handleStartError(ex);
 
                         return true;
@@ -102,34 +109,37 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
             return Hub?.StopAsync() ?? Task.CompletedTask;
         }
 
-        public virtual Task AttachState(string stateKey)
+        public virtual Task AttachState(string stateType, string stateKey)
         {
-            return Hub.InvokeAsync($"AttachState", stateKey);
+            registerStateHandler(stateType, stateKey);
+
+            return Hub.InvokeAsync($"AttachState", stateType, stateKey);
         }
 
-        public virtual Task UnattachState(string stateKey)
+        public virtual Task UnattachState(string stateType, string stateKey)
         {
-            return Hub.InvokeAsync($"UnattachState", stateKey);
+            unregisterStateHandler(stateType, stateKey);
+
+            return Hub.InvokeAsync($"UnattachState", stateType, stateKey);
         }
         #endregion
 
         #region Helpers
-        protected virtual HubConnection connect(string url, HttpTransportType transport)
+        protected virtual HubConnection connect(Func<Task<string>> accessTokenProvider)
         {
-            var bldr = createHubBuilder(url, transport);
+            var bldr = createHubBuilder(accessTokenProvider);
 
             return bldr.Build();
         }
 
-        protected virtual IHubConnectionBuilder createHubBuilder(string url, HttpTransportType transport)
+        protected virtual IHubConnectionBuilder createHubBuilder(Func<Task<string>> accessTokenProvider)
         {
             return new HubConnectionBuilder()
-                .WithUrl(new Uri(url), o =>
+                .WithUrl(new Uri(URL), o =>
                 {
-                    o.Transports = transport;
+                    o.Transports = Transport;
 
-                    //  TODO:  Where to get JWT
-                    o.AccessTokenProvider = async () => Environment.GetEnvironmentVariable("TEMP_JWT");
+                    o.AccessTokenProvider = accessTokenProvider;
                 })
                 .WithAutomaticReconnect();
         }
@@ -140,16 +150,48 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices
         protected virtual async Task onClosed(Exception ex)
         { }
 
-        protected virtual void registerStartHandlers()
+        protected virtual void registerStateHandler(string stateType, string stateKey)
         {
-            Hub.On<MetadataModel>("state-update", updateState);
+            var stateLookup = $"{stateType}|{stateKey}";
+
+            unregisterStateHandler(stateType, stateKey);
+
+            Hub.On<StateUpdateRequest<MetadataModel>>(stateLookup, updateState);
+
+            if (!attachedStates.ContainsKey(stateType))
+                attachedStates[stateType] = new HashSet<string>();
+
+            attachedStates[stateType].Add(stateKey);
         }
 
-        protected virtual void updateState(MetadataModel state)
+        protected virtual void registerStateHandlers()
+        {
+            attachedStates.Each(stateType =>
+            {
+                stateType.Value.Each(stateKey =>
+                {
+                    registerStateHandler(stateType.Key, stateKey);
+                });
+            });
+        }
+
+        protected virtual void unregisterStateHandler(string stateType, string stateKey)
+        {
+            var stateLookup = $"{stateType}|{stateKey}";
+
+            Hub.Remove(stateLookup);
+
+            if (attachedStates.ContainsKey(stateType))
+                attachedStates[stateType].Remove(stateKey);
+        }
+
+        protected virtual void updateState(StateUpdateRequest<MetadataModel> request)
         {
             State?.Invoke(this, new StateEventArgs()
             {
-                State = state
+                State = request.State,
+                StateType = request.StateType,
+                StateKey = request.StateKey
             });
         }
         #endregion

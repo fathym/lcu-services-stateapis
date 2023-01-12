@@ -183,25 +183,25 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new RsaSecurityKey(RSA.Create()),
-                    //IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey))
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    SignatureValidator = (string token, TokenValidationParameters parameters) =>
-                    {
-                        var crypto = (parameters.IssuerSigningKey as RsaSecurityKey).Rsa;
+                    //SignatureValidator = (string token, TokenValidationParameters parameters) =>
+                    //{
+                    //    var crypto = (parameters.IssuerSigningKey as RsaSecurityKey).Rsa;
 
-                        var xml = secretKey;
+                    //    var xml = secretKey;
                         
-                        crypto.FromXmlString(xml);
+                    //    crypto.FromXmlString(xml);
                         
-                        var rsa = new RSACryptoServiceProvider();
+                    //    var rsa = new RSACryptoServiceProvider();
                         
-                        var key = new RsaSecurityKey(rsa);
+                    //    var key = new RsaSecurityKey(rsa);
                         
-                        parameters.IssuerSigningKey = key;
+                    //    parameters.IssuerSigningKey = key;
                         
-                        return key.CryptoProviderFactory.CreateForVerifying(key, "RS256");
-                    }
+                    //    return key.CryptoProviderFactory.CreateForVerifying(key, "RS256");
+                    //}
                 };
 
                 var claims = handler.ValidateToken(accessToken, validationParameters, out SecurityToken validatedToken);

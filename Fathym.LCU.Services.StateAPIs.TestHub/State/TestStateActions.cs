@@ -127,7 +127,7 @@ namespace Fathym.LCU.Services.StateAPIs.TestHub.State
             {
                 response.Model = new Dictionary<string, MetadataModel>()
                 {
-                    { "Test-1", new { Hello = "World" }.JSONConvert<MetadataModel>() }
+                    { "Test-1", new { Name = "World" }.JSONConvert<MetadataModel>() }
                 }.JSONConvert<MetadataModel>();
 
                 response.Status = response.Model != null ? Status.Success : Status.NotLocated;

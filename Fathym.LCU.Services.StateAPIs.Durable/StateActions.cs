@@ -216,7 +216,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
         protected virtual string loadAccessToken(HttpRequestMessage req)
         {
-            var accessToken = req.Headers.GetValues("lcu-access-token").FirstOrDefault();
+            var accessToken = req.Headers.Authorization.Parameter;
 
             if (accessToken.IsNullOrEmpty())
                 throw new ArgumentNullException(nameof(accessToken));

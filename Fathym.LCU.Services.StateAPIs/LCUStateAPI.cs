@@ -3,6 +3,9 @@ using Fathym.API.Fluent;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -57,22 +60,38 @@ namespace Fathym.LCU.Services.StateAPIs
             return username;
         }
 
-        protected virtual async Task executeIfTokenValid(HttpRequestMessage req, string secretKey, Func<JwtSecurityToken, Task> action, Func<Task> invalidTokenHandler)
+        protected virtual async Task executeIfTokenValid(HttpRequestMessage req, Func<JwtSecurityToken, Task> action, Func<Task> invalidTokenHandler)
         {
             string accessToken = loadAccessToken(req);
 
             try
             {
+                IdentityModelEventSource.ShowPII = true;
+
                 var handler = new JwtSecurityTokenHandler();
 
                 var token = handler.ReadToken(accessToken) as JwtSecurityToken;
 
+                var iss = token.Issuer;
+
+                var tfp = token.Payload["tfp"].ToString(); // Sign-in policy name
+
+                var metadataEndpoint = $"{iss}.well-known/openid-configuration?p={tfp}";
+
+                var cm = new ConfigurationManager<OpenIdConnectConfiguration>(metadataEndpoint,
+                    new OpenIdConnectConfigurationRetriever(),
+                    new HttpDocumentRetriever());
+
+                var discoveryDocument = await cm.GetConfigurationAsync();
+
+                var signingKeys = discoveryDocument.SigningKeys;
+
                 var validationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
+                    IssuerSigningKeys = signingKeys,
                     ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateAudience = false,
                 };
 
                 var claims = handler.ValidateToken(accessToken, validationParameters, out SecurityToken validatedToken);
@@ -80,7 +99,7 @@ namespace Fathym.LCU.Services.StateAPIs
                 if (validatedToken != null)
                     await action(token);
             }
-            catch (SecurityTokenException)
+            catch (SecurityTokenException stex)
             {
                 await invalidTokenHandler();
             }
@@ -91,13 +110,12 @@ namespace Fathym.LCU.Services.StateAPIs
             return new APIBoundary<HttpResponseMessage>(logger);
         }
 
-        protected virtual IAPIBoundaried<HttpResponseMessage> withAPIBoundary<TResp>(HttpRequestMessage req, string secretKey,
-            Func<TResp, JwtSecurityToken, Task<TResp>> action, Func<Task<TResp>> setInvalidTokenResponse)
+        protected virtual IAPIBoundaried<HttpResponseMessage> withSecureAPIBoundary<TResp>(HttpRequestMessage req, Func<TResp, JwtSecurityToken, Task<TResp>> action, Func<Task<TResp>> setInvalidTokenResponse)
                 where TResp : new()
         {
             return withAPIBoundary<TResp>(req, async resp =>
             {
-                await executeIfTokenValid(req, secretKey, async accessToken =>
+                await executeIfTokenValid(req, async accessToken =>
                 {
                     resp = await action(resp, accessToken);
                 },
@@ -139,13 +157,13 @@ namespace Fathym.LCU.Services.StateAPIs
             });
         }
 
-        protected virtual IAPIBoundaried<HttpResponseMessage> withAPIBoundary<TRequest, TResponse>(HttpRequestMessage req, string secretKey, Func<TRequest, TResponse, JwtSecurityToken, Task<TResponse>> action)
+        protected virtual IAPIBoundaried<HttpResponseMessage> withSecureAPIBoundary<TRequest, TResponse>(HttpRequestMessage req, Func<TRequest, TResponse, JwtSecurityToken, Task<TResponse>> action)
                 where TRequest : class, new()
                 where TResponse : BaseResponse, new()
         {
             return withAPIBoundary<TRequest, TResponse>(req, async (request, response) =>
             {
-                await executeIfTokenValid(req, secretKey, async accessToken =>
+                await executeIfTokenValid(req, async accessToken =>
                 {
                     response = await action(request, response, accessToken);
                 },

@@ -1,4 +1,5 @@
-﻿using Fathym.API;
+﻿using Azure;
+using Fathym.API;
 using Fathym.API.Fluent;
 using Fathym.LCU.Services.StateAPIs.StateServices;
 using Microsoft.AspNetCore.SignalR;
@@ -257,21 +258,39 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             return new APIBoundary<HttpResponseMessage>(logger);
         }
 
-        protected virtual IAPIBoundaried<HttpResponseMessage> withSecureAPIBoundary<TResp>(ILogger logger, HttpRequestMessage req, Func<TResp, JwtSecurityToken, Task<TResp>> action, Func<Task<TResp>> setInvalidTokenResponse)
-                where TResp : new()
+        protected virtual IAPIBoundaried<HttpResponseMessage> withSecureAPIBoundary<TResponse>(ILogger logger, HttpRequestMessage req, Func<TResponse, JwtSecurityToken, Task<TResponse>> action, Func<Task<TResponse>> setInvalidTokenResponse)
+                where TResponse : new()
         {
-            return withAPIBoundary<TResp>(logger, req, async resp =>
+            return withAPIBoundary<TResponse>(logger, req, async response =>
             {
                 await executeIfTokenValid(req, async accessToken =>
                 {
-                    resp = await action(resp, accessToken);
+                    response = await action(response, accessToken);
                 },
                 async () =>
                 {
-                    resp = await setInvalidTokenResponse();
+                    response = await setInvalidTokenResponse();
                 });
 
-                return resp;
+                return response;
+            });
+        }
+
+        protected virtual IAPIBoundaried<HttpResponseMessage> withSecureAPIBoundary<TResponse>(ILogger logger, HttpRequestMessage req, Func<TResponse, JwtSecurityToken, Task<TResponse>> action)
+                where TResponse : BaseResponse, new()
+        {
+            return withAPIBoundary<TResponse>(logger, req, async response =>
+            {
+                await executeIfTokenValid(req, async accessToken =>
+                {
+                    response = await action(response, accessToken);
+                },
+                async () =>
+                {
+                    response = new TResponse() { Status = Status.Unauthorized };
+                });
+
+                return response;
             });
         }
 

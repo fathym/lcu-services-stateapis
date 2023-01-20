@@ -128,6 +128,24 @@ namespace Fathym.LCU.Services.StateAPIs
             });
         }
 
+        protected virtual IAPIBoundaried<HttpResponseMessage> withSecureAPIBoundary<TResponse>(ILogger logger, HttpRequestMessage req, Func<TResponse, JwtSecurityToken, Task<TResponse>> action)
+                where TResponse : BaseResponse, new()
+        {
+            return withAPIBoundary<TResponse>(req, async resp =>
+            {
+                await executeIfTokenValid(req, async accessToken =>
+                {
+                    resp = await action(resp, accessToken);
+                },
+                async () =>
+                {
+                    resp = new TResponse() { Status = Status.Unauthorized };
+                });
+
+                return resp;
+            });
+        }
+
         protected virtual IAPIBoundaried<HttpResponseMessage> withAPIBoundary<TResp>(HttpRequestMessage req,
             Func<TResp, Task<TResp>> action)
                 where TResp : new()

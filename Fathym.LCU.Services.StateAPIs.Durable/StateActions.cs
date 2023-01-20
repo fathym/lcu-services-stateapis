@@ -142,18 +142,26 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
         protected virtual async Task<SignalRConnectionInfo> negotiate(ILogger logger, HttpRequestMessage req)
         {
-            var authorization = req.Headers.GetValues("Authorization").FirstOrDefault();
+            SignalRConnectionInfo connInfo = null;
 
-            var claims = GetClaims(authorization);
-
-            if (req.Headers.Contains("lcu-ent-lookup"))
-                claims.Add(new Claim("lcu-ent-lookup", req.Headers.GetValues("lcu-ent-lookup").FirstOrDefault()));
-
-            return await NegotiateAsync(new NegotiationOptions
+            await executeIfTokenValid(req, async accessToken =>
             {
-                UserId = claims?.FirstOrDefault(c => c.Type == "emails")?.Value,
-                Claims = claims
+                var claims = accessToken.Claims.ToList();
+
+                if (req.Headers.Contains("lcu-ent-lookup"))
+                    claims.Add(new Claim("lcu-ent-lookup", req.Headers.GetValues("lcu-ent-lookup").FirstOrDefault()));
+
+                connInfo = await NegotiateAsync(new NegotiationOptions
+                {
+                    UserId = claims?.FirstOrDefault(c => c.Type == "emails")?.Value,
+                    Claims = claims
+                });
+            },
+            async () =>
+            {
             });
+
+            return connInfo ?? throw new UnauthorizedAccessException("A valid access token was not provided.");
         }
 
         protected virtual async Task unattachState<TEntityStore>(ILogger logger, InvocationContext invocationContext, IDurableEntityClient client, string stateKey)
@@ -169,7 +177,7 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
         #endregion
 
         #region Rest Helpers
-        protected virtual async Task executeIfTokenValid(HttpRequestMessage req, string secretKey, Func<JwtSecurityToken, Task> action, Func<Task> invalidTokenHandler)
+        protected virtual async Task executeIfTokenValid(HttpRequestMessage req, Func<JwtSecurityToken, Task> action, Func<Task> invalidTokenHandler)
         {
             string accessToken = loadAccessToken(req);
 
@@ -249,12 +257,12 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             return new APIBoundary<HttpResponseMessage>(logger);
         }
 
-        protected virtual IAPIBoundaried<HttpResponseMessage> withAPIBoundary<TResp>(ILogger logger, HttpRequestMessage req, string secretKey, Func<TResp, JwtSecurityToken, Task<TResp>> action, Func<Task<TResp>> setInvalidTokenResponse)
+        protected virtual IAPIBoundaried<HttpResponseMessage> withSecureAPIBoundary<TResp>(ILogger logger, HttpRequestMessage req, Func<TResp, JwtSecurityToken, Task<TResp>> action, Func<Task<TResp>> setInvalidTokenResponse)
                 where TResp : new()
         {
             return withAPIBoundary<TResp>(logger, req, async resp =>
             {
-                await executeIfTokenValid(req, secretKey, async accessToken =>
+                await executeIfTokenValid(req, async accessToken =>
                 {
                     resp = await action(resp, accessToken);
                 },
@@ -265,14 +273,6 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
                 return resp;
             });
-        }
-
-        protected virtual IAPIBoundaried<HttpResponseMessage> withSecureAPIBoundary<TResp>(ILogger logger, HttpRequestMessage req, Func<TResp, JwtSecurityToken, Task<TResp>> action, Func<Task<TResp>> setInvalidTokenResponse)
-                where TResp : new()
-        {
-            var secretKey = Environment.GetEnvironmentVariable("LCU_SECURE_BOUNDARY_KEY");
-
-            return withAPIBoundary(logger, req, secretKey, action, setInvalidTokenResponse);
         }
 
         protected virtual IAPIBoundaried<HttpResponseMessage> withAPIBoundary<T>(ILogger logger, HttpRequestMessage req, Func<T, Task<T>> action)
@@ -303,13 +303,13 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
             });
         }
 
-        protected virtual IAPIBoundaried<HttpResponseMessage> withAPIBoundary<TRequest, TResponse>(ILogger logger, HttpRequestMessage req, string secretKey, Func<TRequest, TResponse, JwtSecurityToken, Task<TResponse>> action)
+        protected virtual IAPIBoundaried<HttpResponseMessage> withSecureAPIBoundary<TRequest, TResponse>(ILogger logger, HttpRequestMessage req, Func<TRequest, TResponse, JwtSecurityToken, Task<TResponse>> action)
                 where TRequest : class, new()
                 where TResponse : BaseResponse, new()
         {
             return withAPIBoundary<TRequest, TResponse>(logger, req, async (request, response) =>
             {
-                await executeIfTokenValid(req, secretKey, async accessToken =>
+                await executeIfTokenValid(req, async accessToken =>
                 {
                     response = await action(request, response, accessToken);
                 },
@@ -320,15 +320,6 @@ namespace Fathym.LCU.Services.StateAPIs.Durable
 
                 return response;
             });
-        }
-
-        protected virtual IAPIBoundaried<HttpResponseMessage> withSecureAPIBoundary<TRequest, TResponse>(ILogger logger, HttpRequestMessage req, Func<TRequest, TResponse, JwtSecurityToken, Task<TResponse>> action)
-                where TRequest : class, new()
-                where TResponse : BaseResponse, new()
-        {
-            var secretKey = Environment.GetEnvironmentVariable("LCU_SECURE_BOUNDARY_KEY");
-
-            return withAPIBoundary(logger, req, secretKey, action);
         }
 
         protected virtual IAPIBoundaried<HttpResponseMessage> withAPIBoundary<TRequest, TResponse>(ILogger logger, HttpRequestMessage req, Func<TRequest, TResponse, Task<TResponse>> action)

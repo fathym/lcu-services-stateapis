@@ -36,7 +36,7 @@ namespace Fathym.LCU.Services.StateAPIs.StateServices.TestAPI.State
         [FunctionName($"{nameof(TestStateHandlerAPIs_AttachState)}")]
         public virtual async Task<HttpResponseMessage> TestStateHandlerAPIs_AttachState(ILogger logger, [HttpTrigger(AuthorizationLevel.Function, "post", Route = attachStateRoute)] HttpRequestMessage req, [StateService(URL = "TEST_STATE_HUB_URL")] TestStateActionsClient stateSvc)
         {
-            return await withAPIBoundary<StateRequest, BaseResponse>(req, async (request, response) =>
+            return await withSecureAPIBoundary<StateRequest, BaseResponse>(req, async (request, response, token) =>
             {
                 logger.LogInformation($"TestStateHandlerAPIs_AttachState => {request.StateKey}");
 
